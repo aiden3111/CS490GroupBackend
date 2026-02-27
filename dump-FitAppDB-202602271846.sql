@@ -16,6 +16,30 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `certification`
+--
+
+DROP TABLE IF EXISTS `certification`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `certification` (
+  `qualificartions` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `years_of_experience` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `certificates` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`qualificartions`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `certification`
+--
+
+LOCK TABLES `certification` WRITE;
+/*!40000 ALTER TABLE `certification` DISABLE KEYS */;
+/*!40000 ALTER TABLE `certification` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `client`
 --
 
@@ -24,29 +48,18 @@ DROP TABLE IF EXISTS `client`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `client` (
   `client_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `first_name` varchar(100) NOT NULL,
-  `last_name` varchar(100) NOT NULL,
-  `dob` varchar(100) NOT NULL,
   `weight` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `height` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `gender` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `coach_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `subscription` varchar(100) NOT NULL,
-  `role` varchar(100) DEFAULT NULL,
-  `email` varchar(100) DEFAULT NULL,
-  `phone_number` varchar(100) DEFAULT NULL,
-  `workout_plan` varchar(100) DEFAULT NULL,
   `signup_date` varchar(100) DEFAULT NULL,
-  `age` varchar(100) DEFAULT NULL,
-  `password` varchar(100) DEFAULT NULL,
   `logs` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`client_id`),
   KEY `client_coach_FK` (`coach_id`),
-  KEY `client_workout_plan_FK` (`workout_plan`),
   KEY `client_logging_FK` (`logs`),
   CONSTRAINT `client_coach_FK` FOREIGN KEY (`coach_id`) REFERENCES `coach` (`coach_id`),
-  CONSTRAINT `client_logging_FK` FOREIGN KEY (`logs`) REFERENCES `logging` (`date`),
-  CONSTRAINT `client_workout_plan_FK` FOREIGN KEY (`workout_plan`) REFERENCES `workout_plan` (`workout_plan_id`)
+  CONSTRAINT `client_logging_FK` FOREIGN KEY (`logs`) REFERENCES `logging` (`date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -72,9 +85,11 @@ CREATE TABLE `coach` (
   `specialty` varchar(100) NOT NULL,
   `reviews` varchar(100) DEFAULT NULL,
   `clients` varchar(100) DEFAULT NULL,
-  `certifcations` varchar(100) DEFAULT NULL,
+  `qualifications` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `availibilty` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`coach_id`)
+  PRIMARY KEY (`coach_id`),
+  KEY `coach_certification_FK` (`qualifications`),
+  CONSTRAINT `coach_certification_FK` FOREIGN KEY (`qualifications`) REFERENCES `certification` (`qualificartions`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -153,7 +168,9 @@ CREATE TABLE `nutrition_plan` (
   `category` varchar(100) DEFAULT NULL,
   `meals_each_day` varchar(100) DEFAULT NULL,
   `stats_each_day` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`nutrition_plan_id`)
+  PRIMARY KEY (`nutrition_plan_id`),
+  KEY `nutrition_plan_coach_FK` (`created_by`),
+  CONSTRAINT `nutrition_plan_coach_FK` FOREIGN KEY (`created_by`) REFERENCES `coach` (`coach_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -164,6 +181,39 @@ CREATE TABLE `nutrition_plan` (
 LOCK TABLES `nutrition_plan` WRITE;
 /*!40000 ALTER TABLE `nutrition_plan` DISABLE KEYS */;
 /*!40000 ALTER TABLE `nutrition_plan` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user_info`
+--
+
+DROP TABLE IF EXISTS `user_info`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_info` (
+  `first_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `last_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `DOB` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `client_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `coach_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `admin_id` tinyint(1) NOT NULL,
+  `phone_number` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `password` varchar(100) NOT NULL,
+  KEY `user_info_client_FK` (`client_id`),
+  KEY `user_info_coach_FK` (`coach_id`),
+  CONSTRAINT `user_info_client_FK` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`),
+  CONSTRAINT `user_info_coach_FK` FOREIGN KEY (`coach_id`) REFERENCES `coach` (`coach_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user_info`
+--
+
+LOCK TABLES `user_info` WRITE;
+/*!40000 ALTER TABLE `user_info` DISABLE KEYS */;
+/*!40000 ALTER TABLE `user_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -181,9 +231,12 @@ CREATE TABLE `workout_plan` (
   `nutrition_plan` varchar(100) DEFAULT NULL,
   `created` varchar(100) DEFAULT NULL,
   `is_draft` tinyint(1) DEFAULT NULL,
+  `client_id` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`workout_plan_id`),
   KEY `workout_plan_exercises_FK` (`excersises`),
   KEY `workout_plan_nutrition_plan_FK` (`nutrition_plan`),
+  KEY `workout_plan_client_FK` (`client_id`),
+  CONSTRAINT `workout_plan_client_FK` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`),
   CONSTRAINT `workout_plan_exercises_FK` FOREIGN KEY (`excersises`) REFERENCES `exercises` (`exercise_name`),
   CONSTRAINT `workout_plan_nutrition_plan_FK` FOREIGN KEY (`nutrition_plan`) REFERENCES `nutrition_plan` (`nutrition_plan_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -211,4 +264,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-02-27 18:09:37
+-- Dump completed on 2026-02-27 18:46:32
