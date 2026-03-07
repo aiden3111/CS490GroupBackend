@@ -68,15 +68,13 @@ def register():
         return jsonify({"message": "User registered successfully."})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
     '''
-    installed google-auth and google-auth-oauthlib for google sign in
-    installed pip install Flask google-auth-oauthlib requests
     front End:
     Add the Google Sign-In button to the front page
     Send the ID token to POST http://localhost:5000/api/google-login
-    Use your GOOGLE_CLIENT_ID on their end
+    Use GOOGLE_CLIENT_ID on their end
     '''
-
 @app.route('/api/google-login', methods=['POST'])
 def google_login():
     data = request.get_json()
