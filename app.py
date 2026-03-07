@@ -4,6 +4,8 @@ import mysql.connector
 import os
 from dotenv import load_dotenv
 from datetime import date
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 load_dotenv()
 
@@ -66,6 +68,56 @@ def register():
         return jsonify({"message": "User registered successfully."})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    '''
+    installed google-auth and google-auth-oauthlib for google sign in
+    installed pip install Flask google-auth-oauthlib requests
+    front End:
+    Add the Google Sign-In button to the front page
+    Send the ID token to POST http://localhost:5000/api/google-login
+    Use your GOOGLE_CLIENT_ID on their end
+    '''
 
+@app.route('/api/google-login', methods=['POST'])
+def google_login():
+    data = request.get_json()
+    token = data.get('token')
+    
+    if not token:
+        return jsonify({"error": "Token is required."}), 400
+    
+    #Send token to google for verification and get user info
+    try:
+        id_info = id_token.verify_oauth2_token(token, 
+                                               google_requests.Request(), 
+                                               os.getenv("GOOGLE_CLIENT_ID"))
+        
+        #Pulls user information
+        email = id_info.get('email')
+        first_name = id_info.get('given_name')
+        last_name = id_info.get('family_name')
+    
+    except ValueError:
+        return jsonify({"error": "Invalid token."}), 401
+    
+    #checking if user exists in database, if not create new user with google info and return user data
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM landing WHERE clientEmail = %s", (email,))
+    user_data = cursor.fetchone()
+
+    #if not a user send back info to frontend for registration
+    if not user_data:
+        return jsonify({
+            "needs registration": True,
+            "email": email,
+            "first_name": first_name,
+            "last_name": last_name,
+            "signupDate": date.today().strftime("%Y-%m-%d")
+        }), 200
+
+    cursor.close()
+    conn.close()
+    return jsonify(user_data)
+    
 if __name__ == "__main__":
     app.run(debug=True)

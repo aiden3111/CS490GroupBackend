@@ -6,15 +6,15 @@ echo Activating virtual environment...
 call venv\Scripts\activate
 
 echo Installing dependencies...
-py -m pip install flask flask-cors
-
-echo Saving dependencies to requirements.txt...
-py -m pip freeze > requirements.txt
-
-echo Adding venv to .gitignore...
-echo venv/ >> .gitignore
+py -m pip install flask flask-cors google-auth-oauthlib google-auth
 
 echo.
 echo Setup complete! To start developing, activate the venv with:
-echo    venv\Scripts\activate
+echo    source venv\Scripts\activate
+echo	Please create your own .env file as well with the following information:
+echo	DB_HOST=<Your Database Host>
+echo	DB_USER=<Your Database Username>
+echo 	DB_PASSWORD=<Your Database Password>
+echo	DB_NAME=<Your Database Name>
+echo	GOOGLE_CLIENT_ID=<our client id>
 pause
