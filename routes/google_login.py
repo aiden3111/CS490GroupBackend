@@ -33,7 +33,7 @@ def google_login():
     #checking if user exists in database, if not create new user with google info and return user data
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM landing WHERE clientEmail = %s", (email,))
+    cursor.execute("SELECT * FROM client WHERE email = %s", (email,))
     user_data = cursor.fetchone()
 
     #if not a user send back info to frontend for registration

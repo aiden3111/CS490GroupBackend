@@ -17,4 +17,5 @@ echo	DB_USER=<Your Database Username>
 echo 	DB_PASSWORD=<Your Database Password>
 echo	DB_NAME=<Your Database Name>
 echo	GOOGLE_CLIENT_ID=<our client id>
+echo 	GOOGLE_CLIENT_SECRET=<our client secret>
 pause
