@@ -15,7 +15,7 @@ def login():
     
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM landing WHERE clientEmail = %s AND password = %s", (clientEmail, password))
+    cursor.execute("SELECT * FROM client WHERE email = %s AND password = %s", (clientEmail, password))
     user_data = cursor.fetchone()
     cursor.close()
     conn.close()

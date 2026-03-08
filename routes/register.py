@@ -23,7 +23,7 @@ def register():
     try:
         conn = get_conn()
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO landing (email, password, first_name, last_name, dob, gender, phone_number, height, weight, signupDate) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        cursor.execute("INSERT INTO client (email, password, first_name, last_name, dob, gender, phone_number, height, weight, signupDate) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                        (email, password, first_name, last_name, dob, gender, phone_number, height, weight, signupDate))
         conn.commit()
         cursor.close()
@@ -31,10 +31,3 @@ def register():
         return jsonify({"message": "User registered successfully."})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
-    '''
-    front End:
-    Add the Google Sign-In button to the front page
-    Send the ID token to POST http://localhost:5000/api/google-login
-    Use GOOGLE_CLIENT_ID on their end
-    '''
