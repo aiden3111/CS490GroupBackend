@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from routes.login import login_bp
 from routes.google_login import google_login_bp
 from routes.register import register_bp
+from routes.profile import profile_bp   # add profile -- Aiden
 
 load_dotenv()
 
@@ -22,6 +23,7 @@ def home():
 app.register_blueprint(login_bp, url_prefix="/api/login")
 app.register_blueprint(google_login_bp, url_prefix="/api/google-login")
 app.register_blueprint(register_bp, url_prefix="/api/register")
+app.register_blueprint(profile_bp, url_prefix="/api/profile") # add profile to registers -- Aiden
 
 
 if __name__ == "__main__":
