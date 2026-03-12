@@ -7,6 +7,9 @@ from routes.register import register_bp
 from routes.profile import profile_bp   # add profile -- Aiden
 from routes.clients import clients_bp 
 from routes.survey import survey_bp 
+from routes.exercises import exercises_bp
+
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -17,7 +20,7 @@ CORS(app)
 def home():
     return jsonify({
         "message": "Api running",
-        "endpoints": ["/api/login/", "/api/google-login/", "/api/register/", "/api/profile" "/api/client"]
+        "endpoints": ["/api/login/", "/api/google-login/", "/api/register/", "/api/profile", "/api/client", "/api/exercises"]
     })
 
 #blueprints for each of the routes, register to app
@@ -27,6 +30,7 @@ app.register_blueprint(register_bp, url_prefix="/api/register")
 app.register_blueprint(profile_bp, url_prefix="/api/profile") # add profile to registers -- Aiden
 app.register_blueprint(clients_bp, url_prefix="/api/clients")
 app.register_blueprint(survey_bp, url_prefix="/api/surveys") # add surveys to registers 
+app.register_blueprint(exercises_bp, url_prefix="/api/exercises")
 
 if __name__ == "__main__":
     app.run(debug=True)
