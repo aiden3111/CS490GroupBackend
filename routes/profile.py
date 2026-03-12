@@ -6,10 +6,10 @@ profile_bp = Blueprint("profile", __name__) # create blueprint for profile page 
 @profile_bp.route("/", methods=["GET"])
 def get_profile():
 
-    email = request.args.get("email")
+    client_id = request.args.get("client_id")
 
-    if not email:
-        return jsonify({"error": "Email is required"}), 400 # throw error if no email -- Aiden
+    if not client_id:
+        return jsonify({"error": "clientID is required"}), 400 # throw error if no client id -- Aiden
     
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
@@ -18,9 +18,9 @@ def get_profile():
         """
         SELECT client_id, first_name, last_name, email, dob, gender, phone_number, height, weight, role, signup_date
         FROM client
-        WHERE email = %s
+        WHERE client_id = %s
         """,
-        (email,)
+        (client_id,)
     )
     user = cursor.fetchone()
 
@@ -41,12 +41,12 @@ def update_physical():
     if not data:
         return jsonify({"error": "Request body is required"}), 400
     
-    email = data.get("email")
+    client_id = data.get("client_id")
     weight = data.get("weight")
     height = data.get("height")
 
-    if not email:
-        return jsonify({"error": "Email is required"}), 400
+    if not client_id:
+        return jsonify({"error": "clientID is required"}), 400
     
     if weight is None and height is None:
         return jsonify({"error": "Must provide weight and/or height to update"}), 400
@@ -56,7 +56,7 @@ def update_physical():
 
     try:
         # check if user exists -- Aiden
-        cursor.execute("SELECT client_id FROM client WHERE email = %s", (email,))
+        cursor.execute("SELECT client_id FROM client WHERE client_id = %s", (client_id,))
         user = cursor.fetchone()
 
         if not user: 
@@ -74,10 +74,10 @@ def update_physical():
             fields.append("height = %s")
             values.append(height)
 
-        values.append(email)
+        values.append(client_id)
 
         cursor.execute(
-            f"UPDATE client SET {', '.join(fields)} WHERE email = %s",
+            f"UPDATE client SET {', '.join(fields)} WHERE client_id = %s",
             tuple(values)
         )
         conn.commit()
