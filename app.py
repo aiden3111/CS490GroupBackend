@@ -6,7 +6,7 @@ from routes.google_login import google_login_bp
 from routes.register import register_bp
 from routes.profile import profile_bp   # add profile -- Aiden
 from routes.clients import clients_bp 
-
+from routes.survey import survey_bp 
 load_dotenv()
 
 app = Flask(__name__)
@@ -26,7 +26,7 @@ app.register_blueprint(google_login_bp, url_prefix="/api/google-login")
 app.register_blueprint(register_bp, url_prefix="/api/register")
 app.register_blueprint(profile_bp, url_prefix="/api/profile") # add profile to registers -- Aiden
 app.register_blueprint(clients_bp, url_prefix="/api/clients")
-
+app.register_blueprint(survey_bp, url_prefix="/api/surveys") # add surveys to registers 
 
 if __name__ == "__main__":
     app.run(debug=True)
