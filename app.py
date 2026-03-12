@@ -5,6 +5,7 @@ from routes.login import login_bp
 from routes.google_login import google_login_bp
 from routes.register import register_bp
 from routes.profile import profile_bp   # add profile -- Aiden
+from routes.clients import clients_bp 
 
 load_dotenv()
 
@@ -16,7 +17,7 @@ CORS(app)
 def home():
     return jsonify({
         "message": "Api running",
-        "endpoints": ["/api/login/", "/api/google-login/", "/api/register/"]
+        "endpoints": ["/api/login/", "/api/google-login/", "/api/register/", "/api/profile" "/api/client"]
     })
 
 #blueprints for each of the routes, register to app
@@ -24,6 +25,7 @@ app.register_blueprint(login_bp, url_prefix="/api/login")
 app.register_blueprint(google_login_bp, url_prefix="/api/google-login")
 app.register_blueprint(register_bp, url_prefix="/api/register")
 app.register_blueprint(profile_bp, url_prefix="/api/profile") # add profile to registers -- Aiden
+app.register_blueprint(clients_bp, url_prefix="/api/clients")
 
 
 if __name__ == "__main__":
