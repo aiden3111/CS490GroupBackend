@@ -127,27 +127,16 @@ def update_client(client_id):
 @clients_bp.route("/<string:client_id>", methods=["DELETE"])
 def delete_client(client_id):
     conn = get_conn()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     try:
-        cursor.execute("""
-            SELECT client_id
-            FROM client
-            WHERE client_id = %s
-        """, (client_id,))
-        
-        client = cursor.fetchone()
+        cursor.execute("DELETE FROM client WHERE client_id = %s", (client_id,))
+        conn.commit()
 
-        if not client:
+        if cursor.rowcount == 0:
             return jsonify({"error": "Client not found"}), 404
 
-        cursor.execute("""
-            DELETE FROM client
-            WHERE client_id = %s
-        """, (client_id,))
-
-        conn.commit()
-        return jsonify({"message": "Client deleted successfully"}), 200
+        return jsonify({"message": "Client account deleted"}), 200
 
     except Exception as e:
         conn.rollback()
