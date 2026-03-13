@@ -157,3 +157,47 @@ def update_goals():
     finally: 
         cursor.close()
         conn.close()
+
+# use case 2.3 - updating coach qualifications/certifications -- Aiden'
+@profile_bp.route("/certifications", methods=["PUT"])
+def update_certifications():
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "Request body is required"}), 400
+    
+    client_id = data.get("client_id")
+    certifications = data.get("certifications")
+
+    if not client_id:
+        return jsonify({"error": "client_id is required"}), 400
+    
+    if certifications is None:
+        return jsonify({"error": "certifications field is required"}), 400
+    
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+
+    try: 
+        # check if client is a coach -- Aiden
+        cursor.execute("SELECT coach_id FROM coach WHERE coach_id = %s", (client_id,))
+        coach = cursor.fetchone()
+
+        if not coach:
+            return jsonify({"error": "Coach not found. Only coaches can update certifications."}), 404
+
+        cursor.execute(
+            "UPDATE coach SET certifications = %s WHERE coach_id = %s",
+            (certifications, client_id)
+        )
+        conn.commit()
+
+        return jsonify({"message": "Certifications updated successfully"}), 200
+    
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+    finally:
+        cursor.close()
+        conn.close()
