@@ -8,7 +8,9 @@ from routes.profile import profile_bp   # add profile -- Aiden
 from routes.clients import clients_bp 
 from routes.survey import survey_bp 
 from routes.exercises import exercises_bp
-
+from routes.coach_search import coach_search_bp
+from routes.coach_landing_page import coach_landing_page_bp
+from routes.coach_request import coach_request_bp
 
 load_dotenv()
 
@@ -20,7 +22,8 @@ CORS(app)
 def home():
     return jsonify({
         "message": "Api running",
-        "endpoints": ["/api/login/", "/api/google-login/", "/api/register/", "/api/profile", "/api/client", "/api/exercises"]
+        "endpoints": ["/api/login/", "/api/google-login/", "/api/register/", "/api/profile", "/api/client", "/api/exercises", "/api/coach_search",
+                      "/api/coach/<int:coach_id>", "/api/coach/<int:coach_id>/requests"]
     })
 
 #blueprints for each of the routes, register to app
@@ -31,6 +34,8 @@ app.register_blueprint(profile_bp, url_prefix="/api/profile") # add profile to r
 app.register_blueprint(clients_bp, url_prefix="/api/clients")
 app.register_blueprint(survey_bp, url_prefix="/api/surveys") # add surveys to registers 
 app.register_blueprint(exercises_bp, url_prefix="/api/exercises")
-
+app.register_blueprint(coach_search_bp, url_prefix="/api/coaches_search") 
+app.register_blueprint(coach_landing_page_bp, url_prefix="/api/coach")
+app.register_blueprint(coach_request_bp, url_prefix="/api/coach")
 if __name__ == "__main__":
     app.run(debug=True)
