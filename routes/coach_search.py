@@ -15,11 +15,12 @@ def search_coaches():
     try:
         query = """
             SELECT 
-                coach_id,
-                first_name,
-                last_name,
-                specialty
+                coach.coach_id,
+                client.first_name,
+                client.last_name,
+                coach.specialty
             FROM coach
+            JOIN client ON client.client_id = coach.coach_id
             WHERE 1=1
         """
         params = []
