@@ -4,7 +4,7 @@ from db import get_conn
 coach_landing_page_bp = Blueprint("coach_landing_page", __name__)
 
 #Display the coaches landing page with all information about the coach
-@coach_landing_page_bp.route("/<int:coach_id>", methods=["GET"])
+@coach_landing_page_bp.route("/<string:coach_id>", methods=["GET"])
 def get_coach_landing_page(coach_id):
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
@@ -43,7 +43,7 @@ def get_coach_landing_page(coach_id):
 
 
 #Send a hire request to the coach
-@coach_landing_page_bp.route("/<int:coach_id>/request", methods=["POST"])
+@coach_landing_page_bp.route("/<string:coach_id>/request", methods=["POST"])
 def send_hire_request(coach_id):
     data = request.get_json()
     client_id = data.get("client_id") if data else None

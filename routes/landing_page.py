@@ -4,7 +4,7 @@ from db import get_conn
 landing_page_bp = Blueprint("landing_page", __name__)
 
 #Client landing page to display top coaches and client trackers
-@landing_page_bp.route("/<int:client_id>", methods=["GET"])
+@landing_page_bp.route("/<string:client_id>", methods=["GET"])
 def get_landing_page(client_id):
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)

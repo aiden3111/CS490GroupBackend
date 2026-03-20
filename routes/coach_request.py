@@ -4,7 +4,7 @@ from db import get_conn
 # display all a coaches client requests and be able to accept or deny them
 coach_request_bp = Blueprint("coach_request", __name__)
 
-@coach_request_bp.route("/<int:coach_id>/requests", methods=["GET"])
+@coach_request_bp.route("/<string:coach_id>/requests", methods=["GET"])
 def get_coach_requests(coach_id):
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
@@ -31,7 +31,7 @@ def get_coach_requests(coach_id):
         conn.close()
 
 
-@coach_request_bp.route("/<int:coach_id>/requests/<int:request_id>", methods=["PUT"])
+@coach_request_bp.route("/<string:coach_id>/requests/<int:request_id>", methods=["PUT"])
 def update_coach_request(coach_id, request_id):
     data = request.get_json()
     status = data.get("status") if data else None
