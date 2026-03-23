@@ -14,15 +14,16 @@ def get_landing_page(client_id):
         cursor.execute("""
             SELECT 
                 c.coach_id,
-                c.first_name,
-                c.last_name,
+                cl.first_name,
+                cl.last_name,
                 c.specialty,
                 COALESCE(AVG(r.rating), 0) AS average_rating
             FROM coach c
+            JOIN client cl ON c.coach_id = cl.client_id  
             LEFT JOIN reviews r ON c.coach_id = r.coach_id
             GROUP BY c.coach_id
             ORDER BY average_rating DESC
-            LIMIT 5
+            LIMIT 3
         """)
         top_coaches = cursor.fetchall()
 
@@ -34,7 +35,7 @@ def get_landing_page(client_id):
                 mood_label,
                 created_at,
                 notes
-            FROM mood_logs
+            FROM mood_log
             WHERE client_id = %s
             ORDER BY created_at DESC
         """, (client_id,))

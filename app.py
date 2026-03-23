@@ -11,6 +11,7 @@ from routes.exercises import exercises_bp
 from routes.coach_search import coach_search_bp
 from routes.coach_landing_page import coach_landing_page_bp
 from routes.coach_request import coach_request_bp
+from routes.landing_page import landing_page_bp 
 
 load_dotenv()
 
@@ -37,5 +38,6 @@ app.register_blueprint(exercises_bp, url_prefix="/api/exercises")
 app.register_blueprint(coach_search_bp, url_prefix="/api/coaches_search") 
 app.register_blueprint(coach_landing_page_bp, url_prefix="/api/coach")
 app.register_blueprint(coach_request_bp, url_prefix="/api/coach")
+app.register_blueprint(landing_page_bp, url_prefix="/api/landing_page")
 if __name__ == "__main__":
     app.run(debug=True)
