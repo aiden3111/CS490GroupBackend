@@ -16,6 +16,7 @@ DELETE FROM nutrition_plan;
 DELETE FROM logging;
 DELETE FROM goals;
 DELETE FROM exercises;
+DELETE FROM coach_request;
 DELETE FROM coach_applications;
 DELETE FROM coach;
 DELETE FROM client;
@@ -441,6 +442,21 @@ INSERT INTO workout_log (
 (10, 'cl010', 7,  '2026-03-11', NULL, NULL, NULL, 'Incline Walk', 25, 'Long cardio session.',   '2026-03-11 19:15:00'),
 (11, 'cl011', 5,  '2026-03-11', 4,  6, 205.00, NULL,          NULL, 'Heavy but solid.',         '2026-03-11 19:30:00'),
 (12, 'cl012', 2,  '2026-03-11', 3, 10,  30.00, NULL,          NULL, 'Shoulders felt good.',     '2026-03-11 19:40:00');
+
+-- =====================
+-- 20. COACH REQUESTS
+-- =====================
+INSERT INTO coach_request (client_id, coach_id, status) VALUES
+('cl002', 'cl017', 'pending'),
+('cl004', 'cl019', 'pending'),
+('cl006', 'cl017', 'accepted'),
+('cl008', 'cl019', 'accepted'),
+('cl010', 'cl020', 'rejected'),
+('cl012', 'cl017', 'pending'),
+('cl013', 'cl018', 'accepted'),
+('cl015', 'cl020', 'rejected'),
+('cl016', 'cl019', 'pending'),
+('cl001', 'cl020', 'accepted');
 
 -- sanity checks
 SELECT COUNT(*) AS admin_count FROM admin;
