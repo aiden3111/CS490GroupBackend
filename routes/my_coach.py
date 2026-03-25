@@ -5,7 +5,7 @@ from db import get_conn
 my_coach_bp = Blueprint("my_coach", __name__)
 
 @my_coach_bp.route("/<string:client_id>", methods=["GET"])
-def get_my_assigned_coach(client_id):
+def get_my_coach(client_id):
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -31,6 +31,33 @@ def get_my_assigned_coach(client_id):
             return jsonify({"message": "No coach found"}), 404
 
         return jsonify(assigned_coach), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+
+@my_coach_bp.route("/<string:client_id>", methods=["PUT"])
+def remove_my_coach(client_id):
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            UPDATE client
+            SET coach_id = NULL
+            WHERE client_id = %s
+        """, (client_id,))
+    
+        conn.commit()
+
+        return jsonify({"message": "Coach removed successfully"}), 200
+        
+        
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
