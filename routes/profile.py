@@ -201,3 +201,45 @@ def update_certifications():
     finally:
         cursor.close()
         conn.close()
+        
+# goals (GET)
+@profile_bp.route("/goals/<string:client_id>", methods=["GET"])
+def get_goals(client_id):
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute("SELECT * FROM goals WHERE client_id = %s", (client_id,))
+        goals = cursor.fetchone()
+
+        if not goals:
+            return jsonify({"error": "Goals not found"}), 404
+        
+        return jsonify(goals), 200
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@profile_bp.route("/coach/<string:coach_id>", methods=["GET", "PUT"])
+def manage_coach_data(coach_id):
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == "GET":
+        # We ONLY select the editable fields. No reviews.
+        cursor.execute("SELECT pricing, specialty, certifications, availability, status FROM coach WHERE coach_id = %s", (coach_id,))
+        return jsonify(cursor.fetchone()), 200
+
+    if request.method == "PUT":
+        data = request.get_json()
+        cursor.execute("""
+            UPDATE coach 
+            SET pricing = %s, specialty = %s, certifications = %s, availability = %s 
+            WHERE coach_id = %s
+        """, (data['pricing'], data['specialty'], data['certifications'], data['availability'], coach_id))
+        conn.commit()
+        return jsonify({"message": "Profile updated"}), 200
