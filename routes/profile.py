@@ -243,3 +243,57 @@ def manage_coach_data(coach_id):
         """, (data['pricing'], data['specialty'], data['certifications'], data['availability'], coach_id))
         conn.commit()
         return jsonify({"message": "Profile updated"}), 200
+    
+# use case 1.6 logout -- Aiden
+@profile_bp.route("/logout", methods=["POST"])
+def logout():
+    return jsonify({"message": "Logged out successfully"}), 200
+
+# use case 1.7 deleting -- Aiden
+@profile_bp.route("/", methods=["DELETE"])
+def delete_account():
+    data = request.get_json()
+
+    if not data or "client_id" not in data:
+        return jsonify({"error": "client_id is required"}), 400
+    
+    client_id = data.get("client_id")
+
+    conn = get_conn()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("SELECT client_id FROM client WHERE client_id = %s", (client_id,))
+        user = cursor.fetchone()
+
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # delete dependencies first -- aiden
+
+        cursor.execute("DELETE FROM messages WHERE sender_id = %s OR receiver_id = %s", (client_id, client_id))
+        cursor.execute("DELETE FROM logging WHERE client_id = %s", (client_id,))
+        cursor.execute("DELETE FROM meal_log WHERE client_id = %s", (client_id,))
+        cursor.execute("DELETE FROM mood_log WHERE client_id = %s", (client_id,))
+        cursor.execute("DELETE FROM notifications WHERE user_id = %s", (client_id,))
+        cursor.execute("DELETE FROM nutrition_plan WHERE client_id = %s", (client_id,))
+        cursor.execute("DELETE FROM reports WHERE reporter_id = %s OR reported_user_id = %s", (client_id, client_id))
+        cursor.execute("DELETE FROM reviews WHERE client_id = %s", (client_id,))
+        cursor.execute("DELETE FROM workout_log WHERE client_id = %s", (client_id,))
+        cursor.execute("DELETE FROM workout_plan WHERE client_id = %s", (client_id,))
+        cursor.execute("DELETE FROM coach_applications WHERE client_id = %s", (client_id,))
+        cursor.execute("DELETE FROM exercises WHERE created_by = %s", (client_id,))
+        cursor.execute("DELETE FROM coach WHERE coach_id = %s", (client_id,))
+        cursor.execute("DELETE FROM client WHERE client_id = %s", (client_id,))
+
+        conn.commit()
+
+        return jsonify({"message": "Account deleted successfully"}), 200
+    
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+    finally:
+        cursor.close()
+        conn.close()
