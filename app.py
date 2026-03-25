@@ -14,6 +14,7 @@ from routes.coach_request import coach_request_bp
 from routes.landing_page import landing_page_bp 
 from routes.my_coach import my_coach_bp 
 from routes.mood import mood_bp 
+from routes.calorie_graph import calorie_graph_bp
 load_dotenv()
 
 app = Flask(__name__)
@@ -42,5 +43,6 @@ app.register_blueprint(coach_request_bp, url_prefix="/api/coach")
 app.register_blueprint(landing_page_bp, url_prefix="/api/landing_page")
 app.register_blueprint(my_coach_bp, url_prefix="/api/my_coach")
 app.register_blueprint(mood_bp, url_prefix="/api/mood")
+app.register_blueprint(calorie_graph_bp, url_prefix="/api/calorie_graph")
 if __name__ == "__main__":
     app.run(debug=True)
