@@ -7,23 +7,30 @@ exercises_bp = Blueprint("exercises", __name__)
 # Get all exercises
 @exercises_bp.route("/", methods=["GET"])
 def get_exercises():
+
+    search_term = request.args.get("search")
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
     try:
-        cursor.execute("""
-            SELECT
-                exercise_id,
-                exercise_name,
-                equipment,
-                muscle_group,
-                category,
-                example_video,
-                is_custom,
-                created_by
-            FROM exercises
-            ORDER BY exercise_name ASC
-        """)
+        if search_term: 
+            query = """
+                SELECT
+                    exercise_id,
+                    exercise_name,
+                    equipment,
+                    muscle_group,
+                    category,
+                    example_video,
+                    is_custom,
+                    created_by
+                FROM exercises
+                ORDER BY exercise_name ASC
+            """
+            cursor.execute(query, (f"%{search_term}%",))
+        else: 
+            cursor.execute("SELECT * FROM exercises ORDER BY exercise_name ASC")
+
         exercises = cursor.fetchall()
         return jsonify(exercises), 200
 
