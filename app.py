@@ -16,6 +16,7 @@ from routes.my_coach import my_coach_bp
 from routes.mood import mood_bp 
 from routes.calorie_graph import calorie_graph_bp
 from routes.workoutLogPage import workoutLogPage
+from routes.steps_graph import steps_graph_bp
 load_dotenv()
 
 app = Flask(__name__)
@@ -47,6 +48,6 @@ app.register_blueprint(my_coach_bp, url_prefix="/api/my_coach")
 app.register_blueprint(mood_bp, url_prefix="/api/mood")
 app.register_blueprint(calorie_graph_bp, url_prefix="/api/calorie_graph")
 app.register_blueprint(workoutLogPage, url_prefix="/api/workoutLogPage")
-
+app.register_blueprint(steps_graph_bp, url_prefix="/api/steps_graph")
 if __name__ == "__main__":
-    app.run(debug=True)
+        app.run(debug=True)
