@@ -132,6 +132,7 @@ def delete_client(client_id):
     cursor = conn.cursor()
 
     try:
+        cursor.execute("DELETE FROM coach_request WHERE client_id = %s", (client_id,))
         cursor.execute("DELETE FROM client WHERE client_id = %s", (client_id,))
         conn.commit()
 
