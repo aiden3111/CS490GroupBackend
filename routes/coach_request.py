@@ -38,6 +38,7 @@ def get_coach_requests(coach_id):
 def update_coach_request(coach_id, request_id):
     data = request.get_json()
     status = data.get("status") if data else None
+    client_id = data.get("client_id")
 
     if status not in ("accepted", "denied", "pending"):
         return jsonify({"error": "Status must be 'accepted', 'denied', or 'pending'"}), 400
@@ -51,6 +52,13 @@ def update_coach_request(coach_id, request_id):
             SET status = %s
             WHERE request_id = %s AND coach_id = %s
         """, (status, request_id, coach_id))
+
+        if status == "accepted" and client_id:
+            cursor.execute("""
+                UPDATE client
+                SET coach_id = %s
+                WHERE client_id = %s
+            """, (coach_id, client_id))
         conn.commit()
 
         if cursor.rowcount == 0:
