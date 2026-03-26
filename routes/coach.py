@@ -55,3 +55,59 @@ def update_coach_settings(coach_id):
     finally:
         cursor.close()
         conn.close()
+
+
+# use case 4.1 accept or declining client requests -- Aiden
+@coach_bp.route("/client-request", methods=["PUT"])
+def handle_client_request():
+    data = request.get_json()
+
+    coach_id = data.get("coach_id")
+    client_id = data.get("client_id")
+    action = data.get("action")  # "accept" or "decline" -- Aiden
+
+    if not coach_id or not client_id or not action:
+        return jsonify({"error": "coach_id, client_id, and action are required"}), 400
+
+    conn = get_conn()
+    cursor = conn.cursor()
+
+    try:
+        # check that client exists -- aiden
+        cursor.execute("SELECT client_id FROM client WHERE client_id = %s", (client_id,))
+        client = cursor.fetchone()
+
+        if not client:
+            return jsonify({"error": "Client not found"}), 404
+
+        # check if coach exists -- aiden
+        cursor.execute("SELECT coach_id FROM coach WHERE coach_id = %s", (coach_id,))
+        coach = cursor.fetchone()
+
+        if not coach:
+            return jsonify({"error": "Coach not found"}), 404
+
+        if action == "accept":
+            cursor.execute(
+                "UPDATE client SET coach_id = %s WHERE client_id = %s",
+                (coach_id, client_id)
+            )
+            message = "Client accepted"
+
+        elif action == "decline":
+            message = "Client request declined"
+
+        else:
+            return jsonify({"error": "Invalid action"}), 400
+
+        conn.commit()
+
+        return jsonify({"message": message}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
