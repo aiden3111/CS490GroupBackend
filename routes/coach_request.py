@@ -12,11 +12,14 @@ def get_coach_requests(coach_id):
     try:
         cursor.execute("""
             SELECT 
-                request_id,
-                client_id,
-                status
-            FROM coach_request
-            WHERE coach_id = %s
+                r.request_id,
+                r.client_id,
+                r.status,
+                c.first_name,
+                c.last_name
+            FROM coach_request r
+            JOIN client c ON r.client_id = c.client_id
+            WHERE r.coach_id = %s
         """, (coach_id,))
         
         requests = cursor.fetchall()
