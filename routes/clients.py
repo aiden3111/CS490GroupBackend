@@ -237,3 +237,37 @@ def assign_coach(client_id):
     finally:
         cursor.close()
         conn.close()
+
+# View all clients assigned to a coach
+@clients_bp.route("/coach/<string:coach_id>", methods=["GET"])
+def get_coach_clients(coach_id):
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT 
+                client_id,
+                first_name,
+                last_name,
+                email,
+                weight,
+                height,
+                gender,
+                signup_date
+            FROM client
+            WHERE coach_id = %s
+            ORDER BY last_name, first_name
+        """, (coach_id,))
+
+        clients = cursor.fetchall()
+        
+        return jsonify(clients), 200
+
+    except Exception as e:
+        print(f"Error fetching coach roster: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
