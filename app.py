@@ -15,6 +15,7 @@ from routes.landing_page import landing_page_bp
 from routes.my_coach import my_coach_bp 
 from routes.mood import mood_bp 
 from routes.calorie_graph import calorie_graph_bp
+from routes.workoutLogPage import workoutLogPage
 load_dotenv()
 
 app = Flask(__name__)
@@ -26,8 +27,9 @@ def home():
     return jsonify({
         "message": "Api running",
         "endpoints": ["/api/login/", "/api/google-login/", "/api/register/", "/api/profile", "/api/client", "/api/exercises", "/api/coach_search",
-                      "/api/coach/<int:coach_id>", "/api/coach/<int:coach_id>/requests"]
-    })
+                      "/api/coach/<int:coach_id>", "/api/coach/<int:coach_id>/requests", "/api/workoutLogPage/",  "/api/workoutLogPage/<log_id>",
+                      "/api/workoutLogPage/history/<client_id>"]
+            })
 
 #blueprints for each of the routes, register to app
 app.register_blueprint(login_bp, url_prefix="/api/login")
@@ -44,5 +46,7 @@ app.register_blueprint(landing_page_bp, url_prefix="/api/landing_page")
 app.register_blueprint(my_coach_bp, url_prefix="/api/my_coach")
 app.register_blueprint(mood_bp, url_prefix="/api/mood")
 app.register_blueprint(calorie_graph_bp, url_prefix="/api/calorie_graph")
+app.register_blueprint(workoutLogPage, url_prefix="/api/workoutLogPage")
+
 if __name__ == "__main__":
     app.run(debug=True)
