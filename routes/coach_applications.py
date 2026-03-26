@@ -80,3 +80,80 @@ def apply_to_become_coach():
     finally:
         cursor.close()
         conn.close()
+
+# use case 5.1 - review/accept coach apps -- Aiden
+@coach_applications_bp.route("/review", methods=["PUT"])
+def review_coach_application():
+    data = request.get_json()
+
+    application_id = data.get("application_id")
+    action = data.get("action")  # "approve" or "decline" -- aiden
+    reviewed_by = data.get("reviewed_by")  # admin id -- aiden
+
+    if not application_id or not action or not reviewed_by:
+        return jsonify({"error": "application_id, action, and reviewed_by are required"}), 400
+
+    if action not in ["approve", "decline"]:
+        return jsonify({"error": "Invalid action"}), 400
+    
+    conn = get_conn()
+    cursor = conn.cursor()
+
+    try:
+        # get application -- aiden
+        cursor.execute(
+            "SELECT client_id FROM coach_applications WHERE application_id = %s",
+            (application_id,)
+        )
+        app = cursor.fetchone()
+
+        if not app:
+            return jsonify({"error": "Application not found"}), 404
+
+        client_id = app[0]
+
+        # update application status -- aiden
+        new_status = "approved" if action == "approve" else "declined"
+
+        cursor.execute(
+            """
+            UPDATE coach_applications
+            SET status = %s, reviewed_by = %s, reviewed_at = %s
+            WHERE application_id = %s
+            """,
+            (new_status, reviewed_by, datetime.now(), application_id)
+        )
+        
+        # if approved, promote to coach -- aiden
+        if action == "approve":
+            # update role -- aiden
+            cursor.execute(
+                "UPDATE client SET role = 'coach' WHERE client_id = %s",
+                (client_id,)
+            )
+
+            #insert into coach table -- aiden
+            # check if already a coach first -- aiden
+            cursor.execute(
+                "SELECT coach_id FROM coach WHERE coach_id = %s",
+                (client_id,)
+            )
+            existing_coach = cursor.fetchone()
+
+            if not existing_coach:
+                cursor.execute(
+                    "INSERT INTO coach (coach_id) VALUES (%s)",
+                    (client_id,)
+                )
+
+        conn.commit()
+
+        return jsonify({"message": f"Application {new_status}"}), 200
+    
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
