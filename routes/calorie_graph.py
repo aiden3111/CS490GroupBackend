@@ -24,7 +24,7 @@ def calorie_graph(client_id):
         cal_graph = cursor.fetchall()
 
         if not cal_graph:
-            return jsonify({"message": "No meals logged yet"}), 404
+            return jsonify([]), 404
 
         return jsonify(cal_graph), 200
 

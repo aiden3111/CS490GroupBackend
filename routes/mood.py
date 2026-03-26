@@ -23,7 +23,7 @@ def get_my_mood(client_id):
         moodlog = cursor.fetchall()
 
         if not moodlog:
-            return jsonify({"message": "No mood log found"}), 404
+            return jsonify([]), 404
 
         return jsonify(moodlog), 200
 
