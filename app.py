@@ -8,9 +8,11 @@ from routes.profile import profile_bp   # add profile -- Aiden
 from routes.clients import clients_bp 
 from routes.survey import survey_bp 
 from routes.exercises import exercises_bp
+from routes.coach import coach_bp
 from routes.coach_search import coach_search_bp
 from routes.coach_landing_page import coach_landing_page_bp
 from routes.coach_request import coach_request_bp
+from routes.coach_applications import coach_applications_bp
 from routes.landing_page import landing_page_bp 
 from routes.my_coach import my_coach_bp 
 from routes.mood import mood_bp 
@@ -27,10 +29,13 @@ CORS(app)
 def home():
     return jsonify({
         "message": "Api running",
-        "endpoints": ["/api/login/", "/api/google-login/", "/api/register/", "/api/profile", "/api/client", "/api/exercises", "/api/coach_search",
-                      "/api/coach/<int:coach_id>", "/api/coach/<int:coach_id>/requests", "/api/workoutLogPage/",  "/api/workoutLogPage/<log_id>",
+
+        "endpoints": ["/api/login/", "/api/google-login/", "/api/register/", "/api/profile", "/api/client", "/api/exercises", "/api/coach", "/api/coach_search",
+                      "/api/coach/<int:coach_id>", "/api/coach/<int:coach_id>/requests", "/api/coach_applications/", "/api/workoutLogPage/",  "/api/workoutLogPage/<log_id>",
                       "/api/workoutLogPage/history/<client_id>"]
             })
+
+
 
 #blueprints for each of the routes, register to app
 app.register_blueprint(login_bp, url_prefix="/api/login")
@@ -40,9 +45,11 @@ app.register_blueprint(profile_bp, url_prefix="/api/profile") # add profile to r
 app.register_blueprint(clients_bp, url_prefix="/api/clients")
 app.register_blueprint(survey_bp, url_prefix="/api/surveys") # add surveys to registers 
 app.register_blueprint(exercises_bp, url_prefix="/api/exercises")
+app.register_blueprint(coach_bp, url_prefix="/api/coach")
 app.register_blueprint(coach_search_bp, url_prefix="/api/coaches_search") 
 app.register_blueprint(coach_landing_page_bp, url_prefix="/api/coach")
 app.register_blueprint(coach_request_bp, url_prefix="/api/coach")
+app.register_blueprint(coach_applications_bp, url_prefix="/api/coach_applications")
 app.register_blueprint(landing_page_bp, url_prefix="/api/landing_page")
 app.register_blueprint(my_coach_bp, url_prefix="/api/my_coach")
 app.register_blueprint(mood_bp, url_prefix="/api/mood")
