@@ -90,7 +90,7 @@ def create_exercise():
     muscle_group = data.get("muscle_group")
     category = data.get("category")
     example_video = data.get("example_video")
-    is_custom = data.get("is_custom", 0)
+    is_custom = data.get("is_custom", 1)
     created_by = data.get("created_by")
 
     if not exercise_name:
