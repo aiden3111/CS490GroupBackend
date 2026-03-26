@@ -44,9 +44,23 @@ def update_coach_request(coach_id, request_id):
         return jsonify({"error": "Status must be 'accepted', 'denied', or 'pending'"}), 400
 
     conn = get_conn()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
 
     try:
+
+        if status == "accepted":
+            cursor.execute("SELECT coach_id FROM client WHERE client_id = %s", (client_id,))
+            client_record = cursor.fetchone()
+
+            if not client_record:
+                return jsonify({"error": "Client not found"}), 404
+            
+            if client_record['coach_id'] is not None:
+                return jsonify({
+                    "error": "This client already has an active coach."
+                }), 400
+
+
         cursor.execute("""
             UPDATE coach_request
             SET status = %s
