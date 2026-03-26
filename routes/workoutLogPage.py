@@ -58,18 +58,33 @@ def edit_workout(log_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@workoutLogPage.route('/history/<string:client_id>', methods=['GET'])  # fixed: int -> string
+@workoutLogPage.route('/history/<string:client_id>', methods=['GET'])
 def workout_history(client_id):
     try:
         conn = get_conn()
-        cursor = conn.cursor(dictionary=True)  # use dictionary cursor
+        cursor = conn.cursor(dictionary=True)
         cursor.execute(
-            "SELECT log_id, log_date, exercise_id, sets_completed, reps_completed, weight, cardio_type, cardio_duration, notes FROM workout_log WHERE client_id=%s ORDER BY log_date DESC",
+            """
+            SELECT log_id, log_date, exercise_id, sets_completed, 
+                   reps_completed, weight, cardio_type, cardio_duration, notes 
+            FROM workout_log 
+            WHERE client_id=%s 
+            ORDER BY log_date DESC, log_id ASC
+            """,
             (client_id,)
         )
         logs = cursor.fetchall()
         cursor.close()
         conn.close()
-        return jsonify({"workout_history": logs})  # no manual loop needed
+
+        # Group by date
+        grouped = {}
+        for log in logs:
+            date = str(log["log_date"])
+            if date not in grouped:
+                grouped[date] = []
+            grouped[date].append(log)
+
+        return jsonify({"workout_history": grouped})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
