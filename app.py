@@ -22,6 +22,7 @@ from routes.workoutPlanExercises import workoutPlanExercisesPage
 from routes.workoutLogPage import workoutLogPage
 from routes.steps_graph import steps_graph_bp
 from routes.my_exercises import my_exercises_bp
+from routes.logging import logging_bp
 
 
 load_dotenv()
@@ -64,5 +65,6 @@ app.register_blueprint(workoutPlanExercisesPage, url_prefix="/api/workoutPlanExe
 app.register_blueprint(workoutLogPage, url_prefix="/api/workoutLogPage")
 app.register_blueprint(steps_graph_bp, url_prefix="/api/steps_graph")
 app.register_blueprint(my_exercises_bp, url_prefix='/api/my_exercises')
+app.register_blueprint(logging_bp, url_prefix="/api/logging")
 if __name__ == "__main__":
         app.run(debug=True)
