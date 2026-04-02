@@ -25,9 +25,14 @@ def get_exercises():
                     is_custom,
                     created_by
                 FROM exercises
+                WHERE exercise_name LIKE %s 
+                    OR muscle_group LIKE %s
+                    OR category LIKE %s
+                    OR equipment LIKE %s
                 ORDER BY exercise_name ASC
             """
-            cursor.execute(query, (f"%{search_term}%",))
+            cursor.execute(query, (f"%{search_term}%", f"%{search_term}%", f"%{search_term}%", f"%{search_term}%")) 
+            # added "WHERE exercise_name LIKE %s and such" to the query and passed the search term as a parameter -- Aiden
         else: 
             cursor.execute("SELECT * FROM exercises ORDER BY exercise_name ASC")
 
@@ -148,7 +153,7 @@ def update_exercise(exercise_id):
     muscle_group = data.get("muscle_group")
     category = data.get("category")
     example_video = data.get("example_video")
-    client_id = data.get("client_id")
+    client_id = data.get("created_by") # fixed here because the exercise table has a "created_by" column that references the client_id of the user who created the exercise BUT NO client_id -- Aiden
 
     conn = get_conn()
     cursor = conn.cursor()
