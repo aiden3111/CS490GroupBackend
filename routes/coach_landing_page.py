@@ -12,13 +12,25 @@ def get_coach_landing_page(coach_id):
     try:
         cursor.execute("""
             SELECT
-                coach_id,
-                specialty,
-                certifications,
-                availability,
-                status
-            FROM coach
-            WHERE coach_id = %s
+                c.coach_id,
+                c.availability,
+                c.status,
+                c.pricing,
+                cl.first_name,
+                cl.last_name,
+                fc.certifications AS fitness_certifications,
+                nc.certifications AS nutrition_certifications,
+                CASE
+                    WHEN fc.coach_id IS NOT NULL AND nc.coach_id IS NOT NULL THEN 'both'
+                    WHEN fc.coach_id IS NOT NULL THEN 'fitness'
+                    WHEN nc.coach_id IS NOT NULL THEN 'nutrition'
+                    ELSE 'none'
+                END AS specialty
+            FROM coach c
+            JOIN client cl ON c.coach_id = cl.client_id
+            LEFT JOIN fitness_coach fc ON c.coach_id = fc.coach_id
+            LEFT JOIN nutrition_coach nc ON c.coach_id = nc.coach_id
+            WHERE c.coach_id = %s
         """, (coach_id,))
         coach_info = cursor.fetchone()
 

@@ -22,7 +22,6 @@ def apply_to_become_coach():
     cursor = conn.cursor(dictionary=True)
 
     try:
-        # make sure client exists
         cursor.execute("""
             SELECT client_id, role
             FROM client
@@ -33,11 +32,9 @@ def apply_to_become_coach():
         if not client:
             return jsonify({"error": "Client not found"}), 404
 
-        # make sure they are not already a coach
         if client["role"] == "coach":
             return jsonify({"error": "User is already a coach"}), 400
 
-        # prevent duplicate pending applications
         cursor.execute("""
             SELECT application_id
             FROM coach_applications
@@ -48,7 +45,6 @@ def apply_to_become_coach():
         if existing_application:
             return jsonify({"error": "You already have a pending application"}), 400
 
-        # insert application
         cursor.execute("""
             INSERT INTO coach_applications (
                 client_id,
@@ -62,13 +58,7 @@ def apply_to_become_coach():
                 reviewed_at
             )
             VALUES (%s, %s, %s, %s, %s, 'pending', NOW(), NULL, NULL)
-        """, (
-            client_id,
-            bio,
-            specialty,
-            certifications,
-            pricing
-        ))
+        """, (client_id, bio, specialty, certifications, pricing))
 
         conn.commit()
         return jsonify({"message": "Coach application submitted successfully"}), 201
@@ -81,26 +71,25 @@ def apply_to_become_coach():
         cursor.close()
         conn.close()
 
-# use case 5.1 - review/accept coach apps -- Aiden
+
 @coach_applications_bp.route("/review", methods=["PUT"])
 def review_coach_application():
     data = request.get_json()
 
     application_id = data.get("application_id")
-    action = data.get("action")  # "approve" or "decline" -- aiden
-    reviewed_by = data.get("reviewed_by")  # admin id -- aiden
+    action = data.get("action")
+    reviewed_by = data.get("reviewed_by")
 
     if not application_id or not action or not reviewed_by:
         return jsonify({"error": "application_id, action, and reviewed_by are required"}), 400
 
     if action not in ["approve", "decline"]:
         return jsonify({"error": "Invalid action"}), 400
-    
+
     conn = get_conn()
     cursor = conn.cursor()
 
     try:
-        # get application -- aiden
         cursor.execute(
             "SELECT client_id FROM coach_applications WHERE application_id = %s",
             (application_id,)
@@ -112,7 +101,6 @@ def review_coach_application():
 
         client_id = app[0]
 
-        # update application status -- aiden
         new_status = "approved" if action == "approve" else "declined"
 
         cursor.execute(
@@ -123,17 +111,13 @@ def review_coach_application():
             """,
             (new_status, reviewed_by, datetime.now(), application_id)
         )
-        
-        # if approved, promote to coach -- aiden
+
         if action == "approve":
-            # update role -- aiden
             cursor.execute(
                 "UPDATE client SET role = 'coach' WHERE client_id = %s",
                 (client_id,)
             )
 
-            #insert into coach table -- aiden
-            # check if already a coach first -- aiden
             cursor.execute(
                 "SELECT coach_id FROM coach WHERE coach_id = %s",
                 (client_id,)
@@ -146,10 +130,38 @@ def review_coach_application():
                     (client_id,)
                 )
 
-        conn.commit()
+            # get specialty and certifications from application
+            cursor.execute(
+                "SELECT specialty, certifications FROM coach_applications WHERE application_id = %s",
+                (application_id,)
+            )
+            app_details = cursor.fetchone()
+            specialty = app_details[0]
+            certifications = app_details[1]
 
+            if specialty in ("fitness", "both"):
+                cursor.execute(
+                    "SELECT coach_id FROM fitness_coach WHERE coach_id = %s", (client_id,)
+                )
+                if not cursor.fetchone():
+                    cursor.execute(
+                        "INSERT INTO fitness_coach (coach_id, certifications) VALUES (%s, %s)",
+                        (client_id, certifications)
+                    )
+
+            if specialty in ("nutrition", "both"):
+                cursor.execute(
+                    "SELECT coach_id FROM nutrition_coach WHERE coach_id = %s", (client_id,)
+                )
+                if not cursor.fetchone():
+                    cursor.execute(
+                        "INSERT INTO nutrition_coach (coach_id, certifications) VALUES (%s, %s)",
+                        (client_id, certifications)
+                    )
+
+        conn.commit()
         return jsonify({"message": f"Application {new_status}"}), 200
-    
+
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 500

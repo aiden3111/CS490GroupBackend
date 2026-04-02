@@ -3,15 +3,6 @@ from db import get_conn
 
 workoutPlansPage = Blueprint("workoutPlansPage", __name__)
 
-###This file handles:
-
-#creating a workout plan
-#getting all plans for a client
-#getting one full plan
-#updating plan info
-#deleting a plan
-###
-
 @workoutPlansPage.route("/", methods=["POST"])
 def create_workout_plan():
     data = request.get_json()
@@ -21,7 +12,6 @@ def create_workout_plan():
     client_id = data.get("client_id")
     difficulty = data.get("difficulty")
     is_draft = data.get("is_draft", 1)
-    nutrition_plan_id = data.get("nutrition_plan_id")
 
     if not all([created_by, frequency, client_id, difficulty]):
         return jsonify({"error": "Required fields are missing."}), 400
@@ -33,22 +23,14 @@ def create_workout_plan():
         cursor.execute(
             """
             INSERT INTO workout_plan
-            (created, created_by, frequency, client_id, difficulty, is_draft, nutrition_plan_id)
-            VALUES (NOW(), %s, %s, %s, %s, %s, %s)
+            (created, created_by, frequency, client_id, difficulty, is_draft)
+            VALUES (NOW(), %s, %s, %s, %s, %s)
             """,
-            (
-                created_by,
-                frequency,
-                client_id,
-                difficulty,
-                is_draft,
-                nutrition_plan_id
-            )
+            (created_by, frequency, client_id, difficulty, is_draft)
         )
         conn.commit()
 
         new_id = cursor.lastrowid
-
         cursor.close()
         conn.close()
 
@@ -75,8 +57,7 @@ def get_client_workout_plans(client_id):
                 frequency,
                 client_id,
                 difficulty,
-                is_draft,
-                nutrition_plan_id
+                is_draft
             FROM workout_plan
             WHERE client_id = %s
             ORDER BY created DESC
@@ -84,7 +65,6 @@ def get_client_workout_plans(client_id):
             (client_id,)
         )
         plans = cursor.fetchall()
-
         cursor.close()
         conn.close()
 
@@ -108,8 +88,7 @@ def get_workout_plan(workout_plan_id):
                 frequency,
                 client_id,
                 difficulty,
-                is_draft,
-                nutrition_plan_id
+                is_draft
             FROM workout_plan
             WHERE workout_plan_id = %s
             """,
@@ -139,11 +118,10 @@ def get_workout_plan(workout_plan_id):
                 e.example_video,
                 e.is_custom
             FROM workout_plan_exercises wpe
-            JOIN exercises e
-                ON wpe.exercise_id = e.exercise_id
+            JOIN exercises e ON wpe.exercise_id = e.exercise_id
             WHERE wpe.workout_plan_id = %s
             ORDER BY
-                FIELD(wpe.day_of_week, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'),
+                FIELD(wpe.day_of_week, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'),
                 wpe.order_in_day ASC
             """,
             (workout_plan_id,)
@@ -175,7 +153,6 @@ def update_workout_plan(workout_plan_id):
     frequency = data.get("frequency")
     difficulty = data.get("difficulty")
     is_draft = data.get("is_draft")
-    nutrition_plan_id = data.get("nutrition_plan_id")
 
     try:
         conn = get_conn()
@@ -186,17 +163,10 @@ def update_workout_plan(workout_plan_id):
             UPDATE workout_plan
             SET frequency = %s,
                 difficulty = %s,
-                is_draft = %s,
-                nutrition_plan_id = %s
+                is_draft = %s
             WHERE workout_plan_id = %s
             """,
-            (
-                frequency,
-                difficulty,
-                is_draft,
-                nutrition_plan_id,
-                workout_plan_id
-            )
+            (frequency, difficulty, is_draft, workout_plan_id)
         )
         conn.commit()
 

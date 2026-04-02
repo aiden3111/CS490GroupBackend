@@ -16,12 +16,19 @@ def get_landing_page(client_id):
                 c.coach_id,
                 cl.first_name,
                 cl.last_name,
-                c.specialty,
-                COALESCE(AVG(r.rating), 0) AS average_rating
+                COALESCE(AVG(r.rating), 0) AS average_rating,
+                CASE
+                    WHEN fc.coach_id IS NOT NULL AND nc.coach_id IS NOT NULL THEN 'Fitness & Nutrition'
+                    WHEN fc.coach_id IS NOT NULL THEN 'Fitness'
+                    WHEN nc.coach_id IS NOT NULL THEN 'Nutrition'
+                    ELSE 'none'
+                END AS specialty
             FROM coach c
             JOIN client cl ON c.coach_id = cl.client_id  
             LEFT JOIN reviews r ON c.coach_id = r.coach_id
-            GROUP BY c.coach_id
+            LEFT JOIN fitness_coach fc ON c.coach_id = fc.coach_id
+            LEFT JOIN nutrition_coach nc ON c.coach_id = nc.coach_id
+            GROUP BY c.coach_id, cl.first_name, cl.last_name, fc.coach_id, nc.coach_id
             ORDER BY average_rating DESC
             LIMIT 3
         """)

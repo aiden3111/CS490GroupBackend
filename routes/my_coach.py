@@ -15,13 +15,21 @@ def get_my_coach(client_id):
                 c.coach_id,
                 cl_coach.first_name,
                 cl_coach.last_name,
-                c.specialty,
-                c.certifications,
                 c.availability,
-                c.pricing
+                c.pricing,
+                fc.certifications AS fitness_certifications,
+                nc.certifications AS nutrition_certifications,
+                CASE
+                    WHEN fc.coach_id IS NOT NULL AND nc.coach_id IS NOT NULL THEN 'Fitness & Nutrition'
+                    WHEN fc.coach_id IS NOT NULL THEN 'Fitness'
+                    WHEN nc.coach_id IS NOT NULL THEN 'Nutrition'
+                    ELSE 'none'
+                END AS specialty
             FROM client cl_user
             JOIN coach c ON cl_user.coach_id = c.coach_id
             JOIN client cl_coach ON c.coach_id = cl_coach.client_id
+            LEFT JOIN fitness_coach fc ON c.coach_id = fc.coach_id
+            LEFT JOIN nutrition_coach nc ON c.coach_id = nc.coach_id
             WHERE cl_user.client_id = %s
         """, (client_id,))
         
