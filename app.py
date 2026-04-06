@@ -23,7 +23,7 @@ from routes.workoutLogPage import workoutLogPage
 from routes.steps_graph import steps_graph_bp
 from routes.my_exercises import my_exercises_bp
 from routes.logging import logging_bp
-
+from routes.nutrition_plan import nutrition_plan_bp
 
 load_dotenv()
 
@@ -38,7 +38,7 @@ def home():
 
         "endpoints": ["/api/login/", "/api/google-login/", "/api/register/", "/api/profile", "/api/client", "/api/exercises", "/api/coach", "/api/coach_search",
                       "/api/coach/<int:coach_id>", "/api/coach/<int:coach_id>/requests", "/api/coach_applications/", "/api/workoutPlansPage/", "/api/workoutPlansExercisesPage", "/api/workoutLogPage/",  "/api/workoutLogPage/<log_id>",
-                      "/api/workoutLogPage/history/<client_id>"]
+                      "/api/workoutLogPage/history/<client_id>", "/api/nutrition_plan/<string:client_id>", "/api/nutrition_plan/<string:client_id>/<string:nutrition_plan_id>"]
             })
 
 
@@ -66,5 +66,6 @@ app.register_blueprint(workoutLogPage, url_prefix="/api/workoutLogPage")
 app.register_blueprint(steps_graph_bp, url_prefix="/api/steps_graph")
 app.register_blueprint(my_exercises_bp, url_prefix='/api/my_exercises')
 app.register_blueprint(logging_bp, url_prefix="/api/logging")
+app.register_blueprint(nutrition_plan_bp, url_prefix="/api/nutrition_plan")
 if __name__ == "__main__":
         app.run(debug=True)
