@@ -40,8 +40,8 @@ def update_coach_request(coach_id, request_id):
     status = data.get("status") if data else None
     client_id = data.get("client_id")
 
-    if status not in ("accepted", "denied", "pending"):
-        return jsonify({"error": "Status must be 'accepted', 'denied', or 'pending'"}), 400
+    if status not in ("accepted", "rejected", "pending"):
+        return jsonify({"error": "Status must be 'accepted', 'rejected', or 'pending'"}), 400
 
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
