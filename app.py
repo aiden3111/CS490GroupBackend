@@ -26,6 +26,8 @@ from routes.logging import logging_bp
 from routes.nutrition_plan import nutrition_plan_bp
 from routes.nutrition_plan_modifications import nutrition_plan_modifications_bp
 from routes.admin import admin_bp
+from routes.messaging import messaging_bp
+from routes.coach_ratings import coach_ratings_bp
 load_dotenv()
 
 app = Flask(__name__)
@@ -41,7 +43,7 @@ def home():
                       "/api/coach/<int:coach_id>", "/api/coach/<int:coach_id>/requests", "/api/coach_applications/", "/api/workoutPlansPage/", "/api/workoutPlansExercisesPage", "/api/workoutLogPage/",  "/api/workoutLogPage/<log_id>",
                       "/api/workoutLogPage/history/<client_id>", "/api/nutrition_plan/<string:client_id>", "/api/nutrition_plan/<string:client_id>/<string:nutrition_plan_id>", "/api/nutrition_plan_modifications/<string:coach_id>/<string:client_id>/<string:nutrition_plan_id>", 
                       "/api/nutrition_plan_modifications/<string:coach_id>/<string:client_id>/<string:nutrition_plan_id>/meals", "/api/calorie_graph/<string:client_id>", "/api/steps_graph/<string:client_id>", "/api/my_exercises/<string:client_id>", "/api/admin/accounts", 
-                      "/api/admin/accounts/<string:client_id>"]
+                      "/api/admin/accounts/<string:client_id>", "/api/messaging/<string:sender_id>/<string:receiver_id>", "/api/coach_ratings/<string:coach_id>"]
             })
 
 
@@ -72,5 +74,7 @@ app.register_blueprint(logging_bp, url_prefix="/api/logging")
 app.register_blueprint(nutrition_plan_bp, url_prefix="/api/nutrition_plan")
 app.register_blueprint(nutrition_plan_modifications_bp, url_prefix="/api/nutrition_plan_modifications")
 app.register_blueprint(admin_bp, url_prefix="/api/admin")
+app.register_blueprint(messaging_bp, url_prefix="/api/messaging")
+app.register_blueprint(coach_ratings_bp, url_prefix="/api/coach_ratings")
 if __name__ == "__main__":
         app.run(debug=True)
