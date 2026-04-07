@@ -231,19 +231,103 @@ def manage_coach_data(coach_id):
 
     if request.method == "GET":
         # We ONLY select the editable fields. No reviews.
-        cursor.execute("SELECT pricing, specialty, certifications, availability, status FROM coach WHERE coach_id = %s", (coach_id,))
+        cursor.execute("SELECT pricing, availability, status FROM coach WHERE coach_id = %s", (coach_id,))
         return jsonify(cursor.fetchone()), 200
 
     if request.method == "PUT":
         data = request.get_json()
         cursor.execute("""
             UPDATE coach 
-            SET pricing = %s, specialty = %s, certifications = %s, availability = %s 
+            SET pricing = %s, availability = %s 
             WHERE coach_id = %s
-        """, (data['pricing'], data['specialty'], data['certifications'], data['availability'], coach_id))
+        """, (data['pricing'], data['availability'], coach_id))
         conn.commit()
         return jsonify({"message": "Profile updated"}), 200
-    
+
+@profile_bp.route("/fitness_coach/<string:coach_id>", methods=["GET", "PUT"])
+def manage_fitness_coach(coach_id):
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        if request.method == "GET":
+            cursor.execute("SELECT * FROM fitness_coach WHERE coach_id = %s", (coach_id,))
+            data = cursor.fetchone()
+            if not data:
+                return jsonify({"Error: Coach not in fitness table"}), 400
+            return jsonify(data), 200
+
+        if request.method == "PUT":
+            data = request.get_json()
+            certifications = data.get("certifications", "")
+
+            cursor.execute("SELECT 1 FROM fitness_coach WHERE coach_id = %s", (coach_id,))
+            exists = cursor.fetchone()
+
+            if exists:
+                cursor.execute("""
+                    UPDATE fitness_coach 
+                    SET certifications = %s 
+                    WHERE coach_id = %s
+                """, (certifications, coach_id))
+            else:
+                cursor.execute("""
+                    INSERT INTO fitness_coach (coach_id, certifications) 
+                    VALUES (%s, %s)
+                """, (coach_id, certifications))
+
+            conn.commit()
+            return jsonify({"message": "Fitness profile updated successfully"}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()  
+
+@profile_bp.route("/nutrition_coach/<string:coach_id>", methods=["GET", "PUT"])
+def manage_nutrition_coach(coach_id):
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        if request.method == "GET":
+            cursor.execute("SELECT * FROM nutrition_coach WHERE coach_id = %s", (coach_id,))
+            data = cursor.fetchone()
+            if not data:
+                return jsonify({"Error: not in nutrition table"}), 400
+            return jsonify(data), 200
+
+        if request.method == "PUT":
+            data = request.get_json()
+            certifications = data.get("certifications", "")
+
+            cursor.execute("SELECT 1 FROM nutrition_coach WHERE coach_id = %s", (coach_id,))
+            exists = cursor.fetchone()
+
+            if exists:
+                cursor.execute("""
+                    UPDATE nutrition_coach 
+                    SET certifications = %s 
+                    WHERE coach_id = %s
+                """, (certifications, coach_id))
+            else:
+                cursor.execute("""
+                    INSERT INTO nutrition_coach (coach_id, certifications) 
+                    VALUES (%s, %s)
+                """, (coach_id, certifications))
+
+            conn.commit()
+            return jsonify({"message": "nutrition profile updated successfully"}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()  
+
 # use case 1.6 logout -- Aiden
 @profile_bp.route("/logout", methods=["POST"])
 def logout():
