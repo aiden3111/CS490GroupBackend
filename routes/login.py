@@ -16,24 +16,44 @@ def login():
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
-    # Check client table first
-    cursor.execute("SELECT * FROM client WHERE email = %s AND password = %s", (clientEmail, password))
-    user_data = cursor.fetchone()
+    try: 
+        cursor.execute("SELECT * FROM client WHERE email = %s AND password = %s", (clientEmail, password))
+        user_data = cursor.fetchone()
 
-    if user_data:
+        if user_data:
+            if user_data.get('role') == 'coach':
+                coach_id = user_data['client_id']
+
+                cursor.execute("SELECT 1 FROM nutrition_coach WHERE coach_id = %s", (coach_id,))
+                specialty_nutrition = cursor.fetchone()
+
+                cursor.execute("SELECT 1 FROM fitness_coach WHERE coach_id = %s", (coach_id,))
+                specialty_fitness = cursor.fetchone()
+
+                if specialty_nutrition and specialty_fitness:
+                    user_data['specialty'] = 'both'
+                elif specialty_fitness:
+                    user_data['specialty'] = 'fitness'
+                elif specialty_nutrition:
+                    user_data['specialty'] = 'nutrition'
+                else:
+                    user_data['specialty'] = None
+                
+                
+            return jsonify(user_data)
+
+        # Check admin table if not found in client
+        cursor.execute("SELECT * FROM admin WHERE email = %s AND password = %s", (clientEmail, password))
+        admin_data = cursor.fetchone()
+
         cursor.close()
         conn.close()
-        return jsonify(user_data)
 
-    # Check admin table if not found in client
-    cursor.execute("SELECT * FROM admin WHERE email = %s AND password = %s", (clientEmail, password))
-    admin_data = cursor.fetchone()
+        if admin_data:
+            admin_data["role"] = "admin"
+            return jsonify(admin_data)
 
-    cursor.close()
-    conn.close()
-
-    if admin_data:
-        admin_data["role"] = "admin"
-        return jsonify(admin_data)
-
-    return jsonify({"error": "Invalid email or password."}), 401
+        return jsonify({"error": "Invalid email or password."}), 401
+    finally:
+        cursor.close()
+        conn.close()
