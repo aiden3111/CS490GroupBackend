@@ -24,7 +24,8 @@ from routes.steps_graph import steps_graph_bp
 from routes.my_exercises import my_exercises_bp
 from routes.logging import logging_bp
 from routes.nutrition_plan import nutrition_plan_bp
-
+from routes.nutrition_plan_modifications import nutrition_plan_modifications_bp
+from routes.admin import admin_bp
 load_dotenv()
 
 app = Flask(__name__)
@@ -38,7 +39,9 @@ def home():
 
         "endpoints": ["/api/login/", "/api/google-login/", "/api/register/", "/api/profile", "/api/client", "/api/exercises", "/api/coach", "/api/coach_search",
                       "/api/coach/<int:coach_id>", "/api/coach/<int:coach_id>/requests", "/api/coach_applications/", "/api/workoutPlansPage/", "/api/workoutPlansExercisesPage", "/api/workoutLogPage/",  "/api/workoutLogPage/<log_id>",
-                      "/api/workoutLogPage/history/<client_id>", "/api/nutrition_plan/<string:client_id>", "/api/nutrition_plan/<string:client_id>/<string:nutrition_plan_id>"]
+                      "/api/workoutLogPage/history/<client_id>", "/api/nutrition_plan/<string:client_id>", "/api/nutrition_plan/<string:client_id>/<string:nutrition_plan_id>", "/api/nutrition_plan_modifications/<string:coach_id>/<string:client_id>/<string:nutrition_plan_id>", 
+                      "/api/nutrition_plan_modifications/<string:coach_id>/<string:client_id>/<string:nutrition_plan_id>/meals", "/api/calorie_graph/<string:client_id>", "/api/steps_graph/<string:client_id>", "/api/my_exercises/<string:client_id>", "/api/admin/accounts", 
+                      "/api/admin/accounts/<string:client_id>"]
             })
 
 
@@ -67,5 +70,7 @@ app.register_blueprint(steps_graph_bp, url_prefix="/api/steps_graph")
 app.register_blueprint(my_exercises_bp, url_prefix='/api/my_exercises')
 app.register_blueprint(logging_bp, url_prefix="/api/logging")
 app.register_blueprint(nutrition_plan_bp, url_prefix="/api/nutrition_plan")
+app.register_blueprint(nutrition_plan_modifications_bp, url_prefix="/api/nutrition_plan_modifications")
+app.register_blueprint(admin_bp, url_prefix="/api/admin")
 if __name__ == "__main__":
         app.run(debug=True)

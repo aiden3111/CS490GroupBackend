@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.19, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 9.6.0, for macos26.3 (arm64)
 --
 -- Host: localhost    Database: fitappdb
 -- ------------------------------------------------------
--- Server version	8.0.44
+-- Server version	9.6.0
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -14,6 +14,14 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+SET @MYSQLDUMP_TEMP_LOG_BIN = @@SESSION.SQL_LOG_BIN;
+SET @@SESSION.SQL_LOG_BIN= 0;
+
+--
+-- GTID state at the beginning of the backup 
+--
+
+SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ '9e8fccdc-31f4-11f1-822d-aa92dda088c9:1-120';
 
 --
 -- Table structure for table `admin`
@@ -131,8 +139,7 @@ CREATE TABLE `coach_applications` (
   PRIMARY KEY (`application_id`),
   KEY `idx_coach_app_client_id` (`client_id`),
   KEY `idx_coach_app_reviewed_by` (`reviewed_by`),
-  CONSTRAINT `fk_coach_applications_admin` FOREIGN KEY (`reviewed_by`) REFERENCES `admin` (`admin_id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `fk_coach_applications_client` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `fk_coach_applications_admin` FOREIGN KEY (`reviewed_by`) REFERENCES `admin` (`admin_id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -161,8 +168,8 @@ CREATE TABLE `coach_request` (
   PRIMARY KEY (`request_id`),
   KEY `coach_request_coach_FK` (`coach_id`),
   KEY `coach_request_client_FK` (`client_id`),
-  CONSTRAINT `coach_request_client_FK` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`),
-  CONSTRAINT `coach_request_coach_FK` FOREIGN KEY (`coach_id`) REFERENCES `coach` (`coach_id`)
+  CONSTRAINT `coach_request_client_FK` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `coach_request_coach_FK` FOREIGN KEY (`coach_id`) REFERENCES `coach` (`coach_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -688,6 +695,7 @@ UNLOCK TABLES;
 --
 -- Dumping routines for database 'fitappdb'
 --
+SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -698,4 +706,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-02 14:05:30
+-- Dump completed on 2026-04-06 23:08:35
