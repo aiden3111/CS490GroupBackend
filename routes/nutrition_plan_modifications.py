@@ -95,3 +95,35 @@ def add_meals_to_nutrition_plan(coach_id, client_id, nutrition_plan_id):
     finally:
         cursor.close()
         conn.close()
+
+#let the coach delete a meal from a nutrition plan
+@nutrition_plan_modifications_bp.route('/<string:coach_id>/<string:client_id>/<string:nutrition_plan_id>/meals/<string:meal_id>', methods=['DELETE'])
+def delete_meal_from_nutrition_plan(coach_id, client_id, nutrition_plan_id, meal_id):
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        # Verify this coach owns the nutrition plan
+        cursor.execute(
+            "SELECT nutrition_plan_id FROM nutrition_plan WHERE nutrition_plan_id = %s AND client_id = %s AND coach_id = %s",
+            (nutrition_plan_id, client_id, coach_id)
+        )
+        if not cursor.fetchone():
+            return jsonify({"error": "Unauthorized: you are not the coach for this nutrition plan"}), 403
+
+        cursor.close()
+        cursor = conn.cursor()
+        query = '''
+                DELETE FROM meals
+                WHERE client_id = %s AND nutrition_plan_id = %s AND meal_id = %s
+            '''
+        cursor.execute(query, (client_id, nutrition_plan_id, meal_id))
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Meal not found"}), 404
+        conn.commit()
+        return jsonify({"message": "Meal deleted from nutrition plan successfully"}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
