@@ -4,10 +4,10 @@ from db import get_conn
 nutrition_plan_bp = Blueprint("nutrition_plan", __name__)
 
 @nutrition_plan_bp.route('/<string:client_id>', methods=['GET'])
-def get_nutrition_plan():
+def get_nutrition_plan(client_id):
     client_id = request.view_args['client_id']
     conn = get_conn()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM nutrition_plan WHERE client_id = %s", (client_id,))
     nutrition_plan = cursor.fetchall()
     conn.close()
