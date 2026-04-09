@@ -13,6 +13,7 @@ def calorie_graph(client_id):
         
         cursor.execute("""
             SELECT 
+                meal_log_id,
                 CAST(log_date AS CHAR) as log_date,
                 actual_calories,
                 notes
