@@ -1,6 +1,8 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
+from flask_socketio import SocketIO, emit, join_room
+from db import get_conn
 from routes.login import login_bp
 from routes.google_login import google_login_bp
 from routes.register import register_bp
@@ -32,6 +34,43 @@ from routes.reports import reports_bp
 load_dotenv()
 
 app = Flask(__name__)
+#code for live messaging using flask-socketio
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+@socketio.on('join')
+def on_join(data):
+    room = data['room']
+    join_room(room)
+
+@socketio.on("send_message")
+def handle_message(data):
+    sender_id = data["sender_id"]
+    receiver_id = data["receiver_id"]
+    content = data["content"]
+    room = data["room"]
+
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            "INSERT INTO messages (sender_id, receiver_id, content, is_read) VALUES (%s, %s, %s, 0)",
+            (sender_id, receiver_id, content)
+        )
+        conn.commit()
+
+        cursor.execute("SELECT * FROM messages WHERE message_id = %s", (cursor.lastrowid,))
+        new_message = cursor.fetchone()
+
+        # Convert datetime to string so it can be sent over socket
+        if new_message and new_message.get("sent_at"):
+            new_message["sent_at"] = new_message["sent_at"].isoformat()
+
+        emit("receive_message", new_message, room=room)
+    except Exception as e:
+        print(f"Error sending message: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+
 app.url_map.strict_slashes = False
 CORS(app)
 
@@ -44,7 +83,7 @@ def home():
                       "/api/coach/<int:coach_id>", "/api/coach/<int:coach_id>/requests", "/api/coach_applications/", "/api/workoutPlansPage/", "/api/workoutPlansExercisesPage", "/api/workoutLogPage/",  "/api/workoutLogPage/<log_id>",
                       "/api/workoutLogPage/history/<client_id>", "/api/nutrition_plan/<string:client_id>", "/api/nutrition_plan/<string:client_id>/<string:nutrition_plan_id>", "/api/nutrition_plan_modifications/<string:coach_id>/<string:client_id>/<string:nutrition_plan_id>", 
                       "/api/nutrition_plan_modifications/<string:coach_id>/<string:client_id>/<string:nutrition_plan_id>/meals", "/api/calorie_graph/<string:client_id>", "/api/steps_graph/<string:client_id>", "/api/my_exercises/<string:client_id>", "/api/admin/accounts", 
-                      "/api/admin/accounts/<string:client_id>", "/api/messaging/<string:sender_id>/<string:receiver_id>", "/api/coach_ratings/<string:coach_id>", "/api/reports/"]
+                      "/api/admin/accounts/<string:client_id>", "/api/messaging/<string:sender_id>/<string:receiver_id>", "/api/coach_ratings/<string:coach_id>", "/api/reports/", "/api/messages/conversations/<string:client_id>"]
             })
 
 
@@ -79,4 +118,4 @@ app.register_blueprint(messaging_bp, url_prefix="/api/messaging")
 app.register_blueprint(coach_ratings_bp, url_prefix="/api/coach_ratings")
 app.register_blueprint(reports_bp, url_prefix="/api/reports")
 if __name__ == "__main__":
-        app.run(debug=True)
+        socketio.run(app, debug=True)

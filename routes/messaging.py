@@ -2,19 +2,57 @@ from flask import jsonify, request, Blueprint
 from db import get_conn
 
 messaging_bp = Blueprint("messaging", __name__)
-#allows client to message their coaches and coaches to message their clients
-@messaging_bp.route('/<string:sender_id>/<string:receiver_id>', methods=['POST'])
-def send_message(sender_id, receiver_id):
-    data = request.get_json()
-    message = data.get('message')
+#using flask-socketio
+
+#returns all the messages between two users for chat history
+@messaging_bp.route("/<string:sender_id>/<string:receiver_id>", methods=["GET"])
+def get_messages(sender_id, receiver_id):
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
     try:
-        cursor.execute("INSERT INTO messages (sender_id, receiver_id, content) VALUES (%s, %s, %s)", (sender_id, receiver_id, message))
-        conn.commit()
-        return jsonify({"message": "Message sent successfully"}), 200
+        cursor.execute(
+            "SELECT message_id, sender_id, receiver_id, content, sent_at, is_read FROM messages WHERE (sender_id = %s AND receiver_id = %s) OR (sender_id = %s AND receiver_id = %s) ORDER BY sent_at ASC",
+            (sender_id, receiver_id, receiver_id, sender_id)
+        )
+        messages = cursor.fetchall()
+        return jsonify(messages), 200
     except Exception as e:
-        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+#Returns list of all conversations for a user, with the most recent message and timestamp for each conversation
+@messaging_bp.route("/conversations/<string:client_id>", methods=["GET"])
+def get_conversations(client_id):
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("""
+            SELECT
+                other_user_id,
+                cl.first_name,
+                cl.last_name,
+                m.content AS last_message,
+                m.sent_at AS last_sent
+            FROM (
+                SELECT
+                    CASE 
+                        WHEN sender_id = %s THEN receiver_id 
+                        ELSE sender_id 
+                    END AS other_user_id,
+                    MAX(message_id) AS latest_message_id
+                FROM messages
+                WHERE sender_id = %s OR receiver_id = %s
+                GROUP BY other_user_id
+            ) AS latest
+            JOIN messages m ON m.message_id = latest.latest_message_id
+            JOIN client cl ON cl.client_id = latest.other_user_id
+            ORDER BY m.sent_at DESC
+        """, (client_id, client_id, client_id))
+        conversations = cursor.fetchall()
+        return jsonify(conversations), 200
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()

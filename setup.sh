@@ -7,7 +7,7 @@ echo "Activating virtual environment..."
 source venv/bin/activate
 
 echo "Installing dependencies..."
-pip install flask flask-cors google-auth-oauthlib google-auth python-dotenv mysql-connector-python
+pip install flask flask-cors google-auth-oauthlib google-auth python-dotenv mysql-connector-python flask-socketio simple-websocket
 
 echo ""
 echo "Setup complete!"

@@ -6,7 +6,7 @@ echo Activating virtual environment...
 call venv\Scripts\activate
 
 echo Installing dependencies...
-py -m pip install flask flask-cors google-auth-oauthlib google-auth python-dotenv mysql-connector-python
+py -m pip install flask flask-cors google-auth-oauthlib google-auth python-dotenv mysql-connector-python flask-socketio simple-websocket
 
 echo.
 echo Setup complete! To start developing, activate the venv with:
