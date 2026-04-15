@@ -272,3 +272,64 @@ def disable_user():
     finally:
         cursor.close()
         conn.close()
+
+@admin_bp.route('/reactivate_user', methods=['PATCH'])
+def reactivate_user():
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        data = request.get_json()
+
+        admin_id = data.get("admin_id")
+        client_id = data.get("client_id")
+        coach_id = data.get("coach_id")
+
+        if not admin_id:
+            return jsonify({"error": "admin_id is required"}), 400
+
+        # Validate admin exists -- aiden
+        cursor.execute("SELECT admin_id FROM admin WHERE admin_id = %s", (admin_id,))
+        if not cursor.fetchone():
+            return jsonify({"error": "Admin not found"}), 404
+
+        # Reactivate CLIENT -- aiden
+        if client_id:
+            cursor.execute("SELECT client_id FROM client WHERE client_id = %s", (client_id,))
+            if not cursor.fetchone():
+                return jsonify({"error": "Client not found"}), 404
+
+            cursor.execute("""
+                UPDATE client
+                SET status = 'active'
+                WHERE client_id = %s
+            """, (client_id,))
+
+            conn.commit()
+            return jsonify({"message": "Client reactivated successfully"}), 200
+
+        # Reactivate COACH
+        elif coach_id:
+            cursor.execute("SELECT coach_id FROM coach WHERE coach_id = %s", (coach_id,))
+            if not cursor.fetchone():
+                return jsonify({"error": "Coach not found"}), 404
+
+            cursor.execute("""
+                UPDATE coach
+                SET status = 'active'
+                WHERE coach_id = %s
+            """, (coach_id,))
+
+            conn.commit()
+            return jsonify({"message": "Coach reactivated successfully"}), 200
+
+        else:
+            return jsonify({"error": "client_id or coach_id is required"}), 400
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
