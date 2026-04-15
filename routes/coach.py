@@ -111,3 +111,31 @@ def handle_client_request():
     finally:
         cursor.close()
         conn.close()
+
+@coach_bp.route("/client_progress/<string:client_id>", methods=["GET"])
+def view_client_progress(client_id):
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+
+    # for steps
+    cursor.execute("""
+        SELECT CAST(log_date AS CHAR) as log_date, steps
+        FROM logging
+        WHERE client_id = %s
+        ORDER BY log_date ASC
+    """, (client_id,))
+    steps = cursor.fetchall()
+
+    # calories
+    cursor.execute("""
+        SELECT CAST(log_date AS CHAR) as log_date, actual_calories
+        FROM meal_log
+        WHERE client_id = %s
+        ORDER BY log_date ASC
+    """, (client_id,))
+    calories = cursor.fetchall()
+
+    return jsonify({
+        "steps": steps,
+        "calories": calories
+    }), 200
