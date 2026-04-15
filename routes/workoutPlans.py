@@ -13,7 +13,7 @@ def create_workout_plan():
     difficulty = data.get("difficulty")
     is_draft = data.get("is_draft", 1)
 
-    if not all([created_by, frequency, client_id, difficulty]):
+    if not all([frequency, client_id, difficulty]):
         return jsonify({"error": "Required fields are missing."}), 400
 
     try:
