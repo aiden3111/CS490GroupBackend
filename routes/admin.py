@@ -211,3 +211,64 @@ def review_report(report_id):
     finally:
         cursor.close()
         conn.close()
+
+@admin_bp.route('/disable_user', methods=['PATCH'])
+def disable_user():
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        data = request.get_json()
+
+        admin_id = data.get("admin_id")
+        client_id = data.get("client_id")
+        coach_id = data.get("coach_id")
+
+        if not admin_id:
+            return jsonify({"error": "admin_id is required"}), 400
+
+        # Validate admin exists
+        cursor.execute("SELECT admin_id FROM admin WHERE admin_id = %s", (admin_id,))
+        if not cursor.fetchone():
+            return jsonify({"error": "Admin not found"}), 404
+
+        # Disable CLIENT
+        if client_id:
+            cursor.execute("SELECT client_id FROM client WHERE client_id = %s", (client_id,))
+            if not cursor.fetchone():
+                return jsonify({"error": "Client not found"}), 404
+
+            cursor.execute("""
+                UPDATE client
+                SET status = 'disabled'
+                WHERE client_id = %s
+            """, (client_id,))
+
+            conn.commit()
+            return jsonify({"message": "Client disabled successfully"}), 200
+
+        # Disable COACH
+        elif coach_id:
+            cursor.execute("SELECT coach_id FROM coach WHERE coach_id = %s", (coach_id,))
+            if not cursor.fetchone():
+                return jsonify({"error": "Coach not found"}), 404
+
+            cursor.execute("""
+                UPDATE coach
+                SET status = 'suspended'
+                WHERE coach_id = %s
+            """, (coach_id,))
+
+            conn.commit()
+            return jsonify({"message": "Coach suspended successfully"}), 200
+
+        else:
+            return jsonify({"error": "client_id or coach_id is required"}), 400
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
