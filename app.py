@@ -31,6 +31,7 @@ from routes.admin import admin_bp
 from routes.messaging import messaging_bp
 from routes.coach_ratings import coach_ratings_bp
 from routes.reports import reports_bp
+from routes.notifications import notifications_bp
 load_dotenv()
 
 app = Flask(__name__)
@@ -117,5 +118,7 @@ app.register_blueprint(admin_bp, url_prefix="/api/admin")
 app.register_blueprint(messaging_bp, url_prefix="/api/messaging")
 app.register_blueprint(coach_ratings_bp, url_prefix="/api/coach_ratings")
 app.register_blueprint(reports_bp, url_prefix="/api/reports")
+app.register_blueprint(notifications_bp, url_prefix="/api/notifications")
+
 if __name__ == "__main__":
         socketio.run(app, debug=True)
