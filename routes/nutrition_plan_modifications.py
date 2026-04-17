@@ -127,3 +127,32 @@ def delete_meal_from_nutrition_plan(coach_id, client_id, nutrition_plan_id, meal
     finally:
         cursor.close()
         conn.close()
+
+#Assign/create the meal plan
+@nutrition_plan_modifications_bp.route('/create_plan', methods=['POST'])
+def create_nutrition_plan_header():
+    data = request.get_json()
+    
+    client_id = data.get('client_id')
+    coach_id = data.get('coach_id')
+    category = data.get('plan_name')
+
+    conn = get_conn()
+    cursor = conn.cursor()
+    try:
+        query = '''
+            INSERT INTO nutrition_plan (client_id, category, created_by)
+            VALUES (%s, %s, %s)
+        '''
+        cursor.execute(query, (client_id, category, coach_id))
+        conn.commit()
+        
+        
+        new_plan_id = cursor.lastrowid 
+        return jsonify({"message": "Plan created", "nutrition_plan_id": new_plan_id}), 201
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
