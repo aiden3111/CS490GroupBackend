@@ -15,7 +15,7 @@ def get_clients_nutrition_plans(coach_id):
             return jsonify({"error": "Coach not found"}), 404
 
         query = '''
-                SELECT c.client_id, c.first_name, c.last_name, np.nutrition_plan_id, np.created_by
+                SELECT c.client_id, c.first_name, c.last_name, np.nutrition_plan_id, np. category, np.created_by
                 FROM client c
                 JOIN nutrition_plan np ON c.client_id = np.client_id
                 WHERE np.created_by = %s
@@ -73,7 +73,7 @@ def add_meals_to_nutrition_plan(coach_id, client_id, nutrition_plan_id):
     try:
         # Verify this coach owns the nutrition plan
         cursor.execute(
-            "SELECT nutrition_plan_id FROM nutrition_plan WHERE nutrition_plan_id = %s AND client_id = %s AND created_by = %s",
+            "SELECT nutrition_plan_id, category FROM nutrition_plan WHERE nutrition_plan_id = %s AND client_id = %s AND created_by = %s",
             (nutrition_plan_id, client_id, coach_id)
         )
         if not cursor.fetchone():
