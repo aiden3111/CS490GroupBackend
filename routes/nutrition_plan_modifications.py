@@ -156,3 +156,27 @@ def create_nutrition_plan_header():
     finally:
         cursor.close()
         conn.close()
+
+
+
+@nutrition_plan_modifications_bp.route('/meals/<int:nutrition_plan_id>', methods=['GET'])
+def get_meals_for_plan(nutrition_plan_id):
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        query = "SELECT * FROM meals WHERE nutrition_plan_id = %s"
+        cursor.execute(query, (nutrition_plan_id,))
+        meals = cursor.fetchall()
+
+
+        for meal in meals:
+            if 'time_of_day' in meal and meal['time_of_day'] is not None:
+            
+                meal['time_of_day'] = str(meal['time_of_day'])
+
+        return jsonify(meals), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
