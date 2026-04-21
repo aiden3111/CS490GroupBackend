@@ -34,6 +34,7 @@ from routes.reports import reports_bp
 from routes.notifications import notifications_bp
 from routes.payment import payment_bp
 from routes.invoice import invoice_bp
+from routes.review import review_bp
 load_dotenv()
 
 app = Flask(__name__)
@@ -123,6 +124,7 @@ app.register_blueprint(reports_bp, url_prefix="/api/reports")
 app.register_blueprint(notifications_bp, url_prefix="/api/notifications")
 app.register_blueprint(payment_bp, url_prefix="/payment")
 app.register_blueprint(invoice_bp, url_prefix="/invoice")
+app.register_blueprint(review_bp, url_prefix="/review")
 
 if __name__ == "__main__":
         socketio.run(app, debug=True)
