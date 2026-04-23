@@ -58,6 +58,31 @@ def edit_workout(log_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@workoutLogPage.route('/<int:log_id>', methods=['DELETE'])
+def delete_workout(log_id):
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT log_id FROM workout_log WHERE log_id=%s",
+            (log_id,)
+        )
+        if cursor.fetchone() is None:
+            cursor.close()
+            conn.close()
+            return jsonify({"error": "Workout log not found."}), 404
+ 
+        cursor.execute(
+            "DELETE FROM workout_log WHERE log_id=%s",
+            (log_id,)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({"message": "Workout log deleted successfully."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @workoutLogPage.route('/history/<string:client_id>', methods=['GET'])
 def workout_history(client_id):
     try:
