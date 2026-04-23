@@ -1,6 +1,8 @@
+USE fitappdb;
+
 CREATE TABLE notification_preferences (
     preference_id INT AUTO_INCREMENT PRIMARY KEY,
-    client_id INT NOT NULL UNIQUE,
+    client_id VARCHAR(50) NOT NULL UNIQUE,
     daily_water_reminder TINYINT(1) NOT NULL DEFAULT 1,
     workout_today_reminder TINYINT(1) NOT NULL DEFAULT 1,
     email_notifications TINYINT(1) NOT NULL DEFAULT 1,
@@ -11,4 +13,3 @@ CREATE TABLE notification_preferences (
         FOREIGN KEY (client_id) REFERENCES client(client_id)
         ON DELETE CASCADE
 );
-
