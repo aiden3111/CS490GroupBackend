@@ -38,7 +38,15 @@ def login():
                     user_data['specialty'] = 'nutrition'
                 else:
                     user_data['specialty'] = None
-                
+            else:
+                user_data['specialty'] = None
+            # If the user is an admin (stored in client table), include admin_id for admin actions
+            if user_data.get("role") == "admin":
+                cursor.execute("SELECT admin_id, is_active FROM admin WHERE email = %s", (clientEmail,))
+                admin_row = cursor.fetchone()
+                if admin_row:
+                    user_data["admin_id"] = admin_row["admin_id"]
+                    user_data["admin_is_active"] = admin_row["is_active"]
                 
             return jsonify(user_data)
 

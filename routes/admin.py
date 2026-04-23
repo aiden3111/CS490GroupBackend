@@ -9,7 +9,23 @@ def get_all_accounts():
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
     try:
-        cursor.execute("SELECT client_id, first_name, last_name, email FROM clients")
+        q = (request.args.get("q") or "").strip()
+        base = """
+            SELECT client_id, first_name, last_name, email, role
+            FROM client
+        """
+        params = []
+        if q:
+            base += """
+            WHERE client_id LIKE %s
+               OR email LIKE %s
+               OR first_name LIKE %s
+               OR last_name LIKE %s
+            """
+            like = f"%{q}%"
+            params = [like, like, like, like]
+        base += " ORDER BY last_name ASC, first_name ASC"
+        cursor.execute(base, tuple(params))
         clients = cursor.fetchall()
         return jsonify({"clients": clients}), 200
     except Exception as e:
@@ -23,7 +39,7 @@ def delete_account(client_id):
     conn = get_conn()
     cursor = conn.cursor()
     try:
-        cursor.execute("DELETE FROM clients WHERE client_id = %s", (client_id,))
+        cursor.execute("DELETE FROM client WHERE client_id = %s", (client_id,))
         if cursor.rowcount == 0:
             return jsonify({"error": "Client not found"}), 404
         conn.commit()
