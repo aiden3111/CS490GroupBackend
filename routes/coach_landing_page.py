@@ -59,9 +59,12 @@ def get_coach_landing_page(coach_id):
 def send_hire_request(coach_id):
     data = request.get_json()
     client_id = data.get("client_id") if data else None
+    payment_id = data.get("payment_id") if data else None
 
     if not client_id:
         return jsonify({"error": "client_id is required"}), 400
+    if not payment_id:
+        return jsonify({"error": "payment_id is required"}), 400
 
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
@@ -71,6 +74,18 @@ def send_hire_request(coach_id):
         cursor.execute("SELECT coach_id FROM coach WHERE coach_id = %s", (coach_id,))
         if not cursor.fetchone():
             return jsonify({"error": "Coach not found"}), 404
+
+        # Check payment method exists and belongs to client
+        cursor.execute(
+            "SELECT payment_id FROM payment_method WHERE payment_id = %s AND client_id = %s",
+            (payment_id, client_id),
+        )
+        if not cursor.fetchone():
+            # Distinguish "no methods at all" so UI can prompt add-new flow.
+            cursor.execute("SELECT 1 FROM payment_method WHERE client_id = %s LIMIT 1", (client_id,))
+            if not cursor.fetchone():
+                return jsonify({"error": "No payment method on file", "code": "NO_PAYMENT_METHOD"}), 400
+            return jsonify({"error": "Invalid payment method", "code": "INVALID_PAYMENT_METHOD"}), 400
 
         # Check for an existing pending request
         cursor.execute("""
