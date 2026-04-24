@@ -1,0 +1,6 @@
+flask
+flask-cors
+python-dotenv
+flask-socketio
+google-auth
+mysql-connector-python
