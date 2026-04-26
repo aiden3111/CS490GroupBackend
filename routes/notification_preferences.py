@@ -112,7 +112,8 @@ def create_notification_preferences():
         conn.close()
 
 
-@notification_preferences_bp.route("/<int:client_id>", methods=["GET"])
+@notification_preferences_bp.route("/<string:client_id>", methods=["GET"])
+
 def get_notification_preferences(client_id):
     """
     Fetch notification preferences for a client.
@@ -143,7 +144,7 @@ def get_notification_preferences(client_id):
         conn.close()
 
 
-@notification_preferences_bp.route("/<int:client_id>", methods=["PUT"])
+@notification_preferences_bp.route("/<string:client_id>", methods=["PUT"])
 def update_notification_preferences(client_id):
     """
     Update one or more notification preference fields.
