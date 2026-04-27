@@ -11,7 +11,7 @@ def get_all_accounts():
     try:
         q = (request.args.get("q") or "").strip()
         base = """
-            SELECT client_id, first_name, last_name, email, role
+            SELECT client_id, first_name, last_name, email, role, status
             FROM client
         """
         params = []
