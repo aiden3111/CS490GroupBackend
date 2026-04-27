@@ -48,9 +48,14 @@ def get_landing_page(client_id):
         """, (client_id,))
         trackers = cursor.fetchall()
 
+        cursor.execute("SELECT first_name FROM client WHERE client_id = %s", (client_id,))
+        user_info = cursor.fetchone()
+        user_name = user_info['first_name'] if user_info else "User"
+
         return jsonify({
             "top_coaches": top_coaches,
-            "trackers": trackers
+            "trackers": trackers,
+            "user_name": user_name
         }), 200
 
     except Exception as e:
