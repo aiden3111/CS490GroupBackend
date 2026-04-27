@@ -6,6 +6,7 @@ coach_search_bp = Blueprint("coach_search", __name__)
 @coach_search_bp.route("/", methods=["GET"])
 def search_coaches():
     name_query = request.args.get("search")
+    sort_order = request.args.get("sort")
 
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
@@ -17,6 +18,7 @@ def search_coaches():
                 cl.first_name,
                 cl.last_name,
                 c.pricing,
+                c.availability,
                 fc.certifications AS fitness_certifications,
                 nc.certifications AS nutrition_certifications,
                 CASE
@@ -38,6 +40,7 @@ def search_coaches():
                 AND (
                     cl.first_name LIKE %s 
                     OR cl.last_name LIKE %s
+                    OR c.availability LIKE %s
                     OR CASE
                         WHEN fc.coach_id IS NOT NULL AND nc.coach_id IS NOT NULL THEN 'Fitness & Nutrition'
                         WHEN fc.coach_id IS NOT NULL THEN 'Fitness'
@@ -46,7 +49,12 @@ def search_coaches():
                     END LIKE %s
                 )
             """
-            params.extend([f"%{name_query}%", f"%{name_query}%", f"%{name_query}%"])
+            params.extend([f"%{name_query}%", f"%{name_query}%", f"%{name_query}%", f"%{name_query}%"])
+     
+        if sort_order == 'price_asc':
+            query += " ORDER BY c.pricing ASC"
+        elif sort_order == 'price_desc':
+            query += " ORDER BY c.pricing DESC"
 
         cursor.execute(query, tuple(params))
         coaches = cursor.fetchall()
