@@ -84,7 +84,7 @@ def create_mood_log():
         if not client_id or mood_score is None:
             return jsonify({"error": "client_id and mood_score are required"}), 400
 
-        if not isinstance(mood_score, int) or mood_score < 1 or mood_score > 5:
+        if not isinstance(mood_score, int) or mood_score < 1 or mood_score > 10:
             return jsonify({"error": "mood_score must be between 1 and 5"}), 400
 
         # Check client exists
