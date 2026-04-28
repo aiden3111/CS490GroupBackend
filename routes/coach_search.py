@@ -7,6 +7,9 @@ coach_search_bp = Blueprint("coach_search", __name__)
 def search_coaches():
     name_query = request.args.get("search")
     sort_order = request.args.get("sort")
+    min_price = request.args.get("min_price")
+    max_price = request.args.get("max_price")
+    availability = request.args.get("availability")
 
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
@@ -50,7 +53,19 @@ def search_coaches():
                 )
             """
             params.extend([f"%{name_query}%", f"%{name_query}%", f"%{name_query}%", f"%{name_query}%"])
-     
+
+        if min_price:
+            query += " AND c.pricing >= %s"
+            params.append(float(min_price))
+
+        if max_price:
+            query += " AND c.pricing <= %s"
+            params.append(float(max_price))
+
+        if availability:
+            query += " AND c.availability LIKE %s"
+            params.append(f"%{availability}%")
+
         if sort_order == 'price_asc':
             query += " ORDER BY c.pricing ASC"
         elif sort_order == 'price_desc':

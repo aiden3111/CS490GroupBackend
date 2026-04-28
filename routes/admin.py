@@ -349,3 +349,142 @@ def reactivate_user():
     finally:
         cursor.close()
         conn.close()
+
+# View only active accounts
+@admin_bp.route('/accounts/active', methods=['GET'])
+def get_active_accounts():
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("""
+            SELECT client_id, first_name, last_name, email, role, status, signup_date
+            FROM client
+            WHERE status = 'active'
+            ORDER BY last_name ASC, first_name ASC
+        """)
+        clients = cursor.fetchall()
+        return jsonify({"clients": clients}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# View only disabled/suspended accounts
+@admin_bp.route('/accounts/disabled', methods=['GET'])
+def get_disabled_accounts():
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("""
+            SELECT client_id, first_name, last_name, email, role, status, signup_date
+            FROM client
+            WHERE status = 'disabled'
+            ORDER BY last_name ASC, first_name ASC
+        """)
+        clients = cursor.fetchall()
+        return jsonify({"clients": clients}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# View new accounts — defaults to last 7 days, use ?days=30 for last 30 days
+@admin_bp.route('/accounts/new', methods=['GET'])
+def get_new_accounts():
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        days = request.args.get("days", 7)
+        cursor.execute("""
+            SELECT client_id, first_name, last_name, email, role, status, signup_date
+            FROM client
+            WHERE signup_date >= DATE_SUB(CURDATE(), INTERVAL %s DAY)
+            ORDER BY signup_date DESC
+        """, (days,))
+        clients = cursor.fetchall()
+        return jsonify({"clients": clients}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# User stats — totals, new signups by period
+@admin_bp.route('/stats', methods=['GET'])
+def get_user_stats():
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("""
+            SELECT 
+                COUNT(*) AS total_users,
+                SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active_users,
+                SUM(CASE WHEN status = 'disabled' THEN 1 ELSE 0 END) AS deactivated_users,
+                SUM(CASE WHEN role = 'coach' THEN 1 ELSE 0 END) AS total_coaches,
+                SUM(CASE WHEN role = 'client' THEN 1 ELSE 0 END) AS total_clients
+            FROM client
+        """)
+        totals = cursor.fetchone()
+
+        cursor.execute("SELECT COUNT(*) AS new_today FROM client WHERE DATE(signup_date) = CURDATE()")
+        totals["new_today"] = cursor.fetchone()["new_today"]
+
+        cursor.execute("SELECT COUNT(*) AS new_this_week FROM client WHERE signup_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)")
+        totals["new_this_week"] = cursor.fetchone()["new_this_week"]
+
+        cursor.execute("SELECT COUNT(*) AS new_this_month FROM client WHERE signup_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)")
+        totals["new_this_month"] = cursor.fetchone()["new_this_month"]
+
+        return jsonify(totals), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# Active user reports by day/week/month based on logging activity
+@admin_bp.route('/active_users', methods=['GET'])
+def get_active_users():
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        period = request.args.get("period", "week")
+
+        if period == "day":
+            interval = "INTERVAL 1 DAY"
+        elif period == "month":
+            interval = "INTERVAL 30 DAY"
+        else:
+            interval = "INTERVAL 7 DAY"
+
+        cursor.execute(f"""
+            SELECT 
+                COUNT(DISTINCT l.client_id) AS active_users,
+                DATE(l.log_date) AS date
+            FROM logging l
+            JOIN client c ON l.client_id = c.client_id
+            WHERE l.log_date >= DATE_SUB(CURDATE(), {interval})
+            GROUP BY DATE(l.log_date)
+            ORDER BY date ASC
+        """)
+        activity = cursor.fetchall()
+
+        cursor.execute(f"SELECT COUNT(DISTINCT client_id) AS total_active FROM logging WHERE log_date >= DATE_SUB(CURDATE(), {interval})")
+        total = cursor.fetchone()["total_active"]
+
+        return jsonify({
+            "period": period,
+            "total_active_users": total,
+            "daily_breakdown": activity
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()    
