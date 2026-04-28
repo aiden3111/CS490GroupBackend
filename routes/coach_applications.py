@@ -4,6 +4,42 @@ from datetime import datetime
 
 coach_applications_bp = Blueprint("coach_applications", __name__)
 
+@coach_applications_bp.route("/", methods=["GET"])
+def list_coach_applications():
+    status = (request.args.get("status") or "").strip().lower()
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        q = """
+            SELECT
+                ca.application_id,
+                ca.client_id,
+                cl.first_name,
+                cl.last_name,
+                cl.email,
+                ca.specialty,
+                ca.certifications,
+                ca.bio,
+                ca.pricing,
+                ca.status,
+                ca.submitted_at,
+                ca.reviewed_by,
+                ca.reviewed_at
+            FROM coach_applications ca
+            JOIN client cl ON ca.client_id = cl.client_id
+        """
+        params = []
+        if status:
+            q += " WHERE ca.status = %s"
+            params.append(status)
+        q += " ORDER BY ca.submitted_at DESC, ca.application_id DESC"
+        cursor.execute(q, tuple(params))
+        return jsonify({"applications": cursor.fetchall()}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 @coach_applications_bp.route("/apply", methods=["POST"])
 def apply_to_become_coach():
