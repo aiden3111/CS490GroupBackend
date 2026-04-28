@@ -488,3 +488,29 @@ def get_active_users():
     finally:
         cursor.close()
         conn.close()    
+
+@admin_bp.route('/check_status/<string:user_id>', methods=['GET'])
+def check_status(user_id):
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute("SELECT status FROM coach WHERE coach_id = %s", (user_id,))
+        res = cursor.fetchone()
+        
+        if not res:
+            cursor.execute("SELECT status FROM client WHERE client_id = %s", (user_id,))
+            res = cursor.fetchone()
+
+        if res:
+            status_value = res['status'] if res.get('status') else "active"
+        else:
+            status_value = "active"
+
+        return jsonify({"status": status_value.lower()}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()    
