@@ -10,9 +10,17 @@ def get_reviews(coach_id):
 
     try:
         cursor.execute("""
-            SELECT client_id, rating, comment, created_at
-            FROM reviews
-            WHERE coach_id = %s
+            SELECT 
+                r.client_id, 
+                r.rating, 
+                r.comment, 
+                CAST(r.created_at AS CHAR) AS created_at,
+                cl.first_name, 
+                cl.last_name
+            FROM reviews r
+            JOIN client cl ON r.client_id = cl.client_id
+            WHERE r.coach_id = %s
+            ORDER BY r.created_at DESC
         """, (coach_id,))
 
         reviews = cursor.fetchall()
