@@ -213,7 +213,12 @@ def get_goals(client_id):
         goals = cursor.fetchone()
 
         if not goals:
-            return jsonify({"error": "Goals not found"}), 404
+            return jsonify({
+                "goal_weight": 0,
+                "steps": 0,
+                "time_active": 0,
+                "workout_days_per_week": 0
+            }), 200
         
         return jsonify(goals), 200
     
