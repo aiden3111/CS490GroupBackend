@@ -112,50 +112,60 @@ def handle_client_request():
         cursor.close()
         conn.close()
 
-@coach_bp.route("/client_progress/<string:client_id>", methods=["GET"])
+@coach_bp.route("/<string:coach_id>/client_progress/<string:client_id>", methods=["GET"])
 def view_client_progress(client_id):
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT first_name, last_name FROM client WHERE client_id = %s", (client_id,))
-    client_info = cursor.fetchone()
+    try:
+        
+        cursor.execute("SELECT first_name, last_name FROM client WHERE client_id = %s", (client_id,))
+        client_info = cursor.fetchone()
 
-    # for steps
-    cursor.execute("""
-        SELECT CAST(log_date AS CHAR) as log_date, steps
-        FROM logging
+        if not client_info:
+             return jsonify({"error": "Client not found"}), 404
+
+        # for steps
+        cursor.execute("""
+            SELECT CAST(log_date AS CHAR) as log_date, steps
+            FROM logging
+            WHERE client_id = %s
+            ORDER BY log_date ASC
+        """, (client_id,))
+        steps = cursor.fetchall()
+
+        # calories
+        cursor.execute("""
+        SELECT 
+            CAST(log_date AS CHAR) as log_date, 
+            actual_calories,
+            protein,
+            carbs,
+            fats,
+            notes
+        FROM meal_log
         WHERE client_id = %s
         ORDER BY log_date ASC
-    """, (client_id,))
-    steps = cursor.fetchall()
+        """, (client_id,))
+        calories = cursor.fetchall()
+        # I alsso need workout - prof requirements
+        cursor.execute("""
+            SELECT log_id, CAST(log_date AS CHAR) as log_date, exercise_id, 
+                sets_completed, reps_completed, weight, cardio_type, cardio_duration, notes 
+            FROM workout_log 
+            WHERE client_id = %s 
+            ORDER BY log_date DESC
+        """, (client_id,))
+        workouts = cursor.fetchall()
 
-    # calories
-    cursor.execute("""
-    SELECT 
-        CAST(log_date AS CHAR) as log_date, 
-        actual_calories,
-        protein,
-        carbs,
-        fats,
-        notes
-    FROM meal_log
-    WHERE client_id = %s
-    ORDER BY log_date ASC
-    """, (client_id,))
-    calories = cursor.fetchall()
-    # I alsso need workout - prof requirements
-    cursor.execute("""
-        SELECT log_id, CAST(log_date AS CHAR) as log_date, exercise_id, 
-               sets_completed, reps_completed, weight, cardio_type, cardio_duration, notes 
-        FROM workout_log 
-        WHERE client_id = %s 
-        ORDER BY log_date DESC
-    """, (client_id,))
-    workouts = cursor.fetchall()
-
-    return jsonify({
-        "client_name": f"{client_info['first_name']} {client_info['last_name']}",
-        "steps": steps,
-        "calories": calories,
-        "workouts": workouts
-    }), 200
+        return jsonify({
+            "client_name": f"{client_info['first_name']} {client_info['last_name']}",
+            "steps": steps,
+            "calories": calories,
+            "workouts": workouts
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
