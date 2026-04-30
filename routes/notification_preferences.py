@@ -12,8 +12,7 @@ from db import get_conn
 
 notification_preferences_bp = Blueprint(
     "notification_preferences",
-    __name__,
-    url_prefix="/api/notification-preferences"
+    __name__
 )
 
 
