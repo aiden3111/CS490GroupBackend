@@ -126,7 +126,7 @@ app.register_blueprint(notifications_bp, url_prefix="/api/notifications")
 app.register_blueprint(notification_preferences_bp, url_prefix="/api/notification-preferences")
 app.register_blueprint(payment_bp, url_prefix="/payment")
 app.register_blueprint(invoice_bp, url_prefix="/invoice")
-app.register_blueprint(review_bp, url_prefix="/review")
+app.register_blueprint(review_bp, url_prefix="/api/review")
 
 if __name__ == "__main__":
         socketio.run(app, debug=True)
