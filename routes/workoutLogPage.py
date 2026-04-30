@@ -4,7 +4,7 @@ from db import get_conn
 # Allow clients to log, edit their workouts, and display their workout history.
 workoutLogPage = Blueprint("workoutLogPage", __name__)
 
-@workoutLogPage.route('/', methods=['POST'])
+@workoutLogPage.route('', methods=['POST'])
 def log_workout():
     data = request.get_json()
     client_id = data.get('client_id')
