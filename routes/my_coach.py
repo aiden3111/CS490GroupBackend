@@ -36,7 +36,7 @@ def get_my_coach(client_id):
         assigned_coach = cursor.fetchone()
 
         if not assigned_coach:
-            return jsonify({"message": "No coach found"}), 404
+            return jsonify(None), 202
 
         return jsonify(assigned_coach), 200
 
