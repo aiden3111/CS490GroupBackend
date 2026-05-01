@@ -6,6 +6,59 @@ coach_applications_bp = Blueprint("coach_applications", __name__)
 
 @coach_applications_bp.route("/", methods=["GET"])
 def list_coach_applications():
+    """
+    List coach applications with optional status filter.
+    ---
+    tags:
+      - Coach Applications
+    parameters:
+      - name: status
+        in: query
+        type: string
+        enum: [pending, approved, declined]
+        description: Filter applications by status
+    responses:
+      200:
+        description: List of coach applications
+        schema:
+          type: object
+          properties:
+            applications:
+              type: array
+              items:
+                type: object
+                properties:
+                  application_id:
+                    type: integer
+                  client_id:
+                    type: string
+                  first_name:
+                    type: string
+                  last_name:
+                    type: string
+                  email:
+                    type: string
+                  specialty:
+                    type: string
+                  certifications:
+                    type: string
+                  bio:
+                    type: string
+                  pricing:
+                    type: number
+                  status:
+                    type: string
+                  submitted_at:
+                    type: string
+                    format: date-time
+                  reviewed_by:
+                    type: string
+                  reviewed_at:
+                    type: string
+                    format: date-time
+      500:
+        description: Server error
+    """
     status = (request.args.get("status") or "").strip().lower()
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
@@ -43,6 +96,51 @@ def list_coach_applications():
 
 @coach_applications_bp.route("/apply", methods=["POST"])
 def apply_to_become_coach():
+    """
+    Submit an application to become a coach.
+    ---
+    tags:
+      - Coach Applications
+    parameters:
+      - name: application_data
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - client_id
+          properties:
+            client_id:
+              type: string
+              description: Client ID of the applicant
+            bio:
+              type: string
+              description: Coach biography
+            specialty:
+              type: string
+              enum: [fitness, nutrition, both]
+              description: Coaching specialty
+            certifications:
+              type: string
+              description: Coach certifications
+            pricing:
+              type: number
+              description: Coaching pricing
+    responses:
+      201:
+        description: Application submitted successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+      400:
+        description: Invalid request or already applied
+      404:
+        description: Client not found
+      500:
+        description: Server error
+    """
     data = request.get_json()
 
     client_id = data.get("client_id")
@@ -110,6 +208,47 @@ def apply_to_become_coach():
 
 @coach_applications_bp.route("/review", methods=["PUT"])
 def review_coach_application():
+    """
+    Review and approve/decline a coach application.
+    ---
+    tags:
+      - Coach Applications
+    parameters:
+      - name: review_data
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - application_id
+            - action
+            - reviewed_by
+          properties:
+            application_id:
+              type: integer
+              description: Application ID to review
+            action:
+              type: string
+              enum: [approve, decline]
+              description: Review action
+            reviewed_by:
+              type: string
+              description: Admin/coach ID performing the review
+    responses:
+      200:
+        description: Application reviewed successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+      400:
+        description: Invalid request data
+      404:
+        description: Application not found
+      500:
+        description: Server error
+    """
     data = request.get_json()
 
     application_id = data.get("application_id")

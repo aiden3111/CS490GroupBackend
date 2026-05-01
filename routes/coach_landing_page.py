@@ -6,6 +6,24 @@ coach_landing_page_bp = Blueprint("coach_landing_page", __name__)
 #Display the coaches landing page with all information about the coach
 @coach_landing_page_bp.route("/<string:coach_id>", methods=["GET"])
 def get_coach_landing_page(coach_id):
+    """
+    Get a coach's public landing page with info and reviews.
+    ---
+    tags:
+      - Coach
+    parameters:
+      - name: coach_id
+        in: path
+        required: true
+        type: string
+    responses:
+      200:
+        description: Coach profile including specialty, pricing, availability, and reviews
+      404:
+        description: Coach not found
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -57,6 +75,41 @@ def get_coach_landing_page(coach_id):
 #Send a hire request to the coach
 @coach_landing_page_bp.route("/<string:coach_id>/request", methods=["POST"])
 def send_hire_request(coach_id):
+    """
+    Send a hire request to a coach (requires a valid payment method).
+    ---
+    tags:
+      - Coach
+    parameters:
+      - name: coach_id
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - client_id
+            - payment_id
+          properties:
+            client_id:
+              type: string
+            payment_id:
+              type: integer
+    responses:
+      201:
+        description: Hire request sent successfully
+      400:
+        description: Missing fields or no payment method on file
+      404:
+        description: Coach not found
+      409:
+        description: A pending request already exists
+      500:
+        description: Server error
+    """
     data = request.get_json()
     client_id = data.get("client_id") if data else None
     payment_id = data.get("payment_id") if data else None

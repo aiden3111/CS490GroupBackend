@@ -5,6 +5,36 @@ nutrition_plan_bp = Blueprint("nutrition_plan", __name__)
 
 @nutrition_plan_bp.route('/<string:client_id>', methods=['GET'])
 def get_nutrition_plan(client_id):
+    """
+    Get all nutrition plans for a client.
+    ---
+    tags:
+      - Nutrition
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+        description: Client ID
+    responses:
+      200:
+        description: List of nutrition plans
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              nutrition_plan_id:
+                type: string
+              client_id:
+                type: string
+              category:
+                type: string
+              created_by:
+                type: string
+      500:
+        description: Server error
+    """
     client_id = request.view_args['client_id']
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
@@ -15,6 +45,46 @@ def get_nutrition_plan(client_id):
 
 @nutrition_plan_bp.route('/<string:client_id>/<string:nutrition_plan_id>', methods=['GET'])
 def get_nutrition_plan_by_id(client_id, nutrition_plan_id):
+    """
+    Get all meals for a specific nutrition plan.
+    ---
+    tags:
+      - Nutrition
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+        description: Client ID
+      - name: nutrition_plan_id
+        in: path
+        required: true
+        type: string
+        description: Nutrition plan ID
+    responses:
+      200:
+        description: List of meals in the nutrition plan
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              meal_id:
+                type: integer
+              nutrition_plan_id:
+                type: string
+              meal_name:
+                type: string
+              calories:
+                type: number
+              time_of_day:
+                type: string
+                format: time
+      404:
+        description: Meals not found
+      500:
+        description: Server error
+    """
     client_id = request.view_args['client_id']
     nutrition_plan_id = request.view_args['nutrition_plan_id']
     conn = get_conn()
@@ -42,6 +112,46 @@ def get_nutrition_plan_by_id(client_id, nutrition_plan_id):
 
 @nutrition_plan_bp.route('/log', methods=['POST'])
 def log_meal_entry():
+    """
+    Log a meal entry for a client.
+    ---
+    tags:
+      - Nutrition
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - client_id
+            - meal_id
+          properties:
+            client_id:
+              type: string
+              description: Client ID
+            meal_id:
+              type: integer
+              description: Meal ID from nutrition plan
+            calories:
+              type: number
+              description: Actual calories consumed
+            notes:
+              type: string
+              description: Optional notes
+    responses:
+      201:
+        description: Meal logged successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            meal_id:
+              type: integer
+      500:
+        description: Server error
+    """
     data = request.get_json()
     client_id = data.get('client_id')
     meal_id = data.get('meal_id')
@@ -77,6 +187,39 @@ from datetime import date
 
 @nutrition_plan_bp.route('/log/<int:meal_log_id>', methods=['DELETE', 'PUT'])
 def modify_meal_log(meal_log_id):
+    """
+    Modify a meal log entry (delete or update). Only today's entries can be modified.
+    ---
+    tags:
+      - Nutrition
+    parameters:
+      - name: meal_log_id
+        in: path
+        required: true
+        type: integer
+        description: Meal log entry ID
+      - in: body
+        name: body
+        description: Required for PUT requests
+        schema:
+          type: object
+          properties:
+            calories:
+              type: number
+              description: Updated calories
+            notes:
+              type: string
+              description: Updated notes
+    responses:
+      200:
+        description: Meal log modified successfully
+      403:
+        description: Cannot modify logs from previous dates
+      404:
+        description: Log entry not found
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
     

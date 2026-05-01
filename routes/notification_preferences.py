@@ -33,7 +33,74 @@ def row_to_dict(row):
 def create_notification_preferences():
     """
     Create notification preferences for a client.
-    If no values are passed, defaults are used.
+    ---
+    tags:
+      - Notification Preferences
+    parameters:
+      - name: preference_data
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - client_id
+          properties:
+            client_id:
+              type: string
+              description: Client ID
+            daily_water_reminder:
+              type: boolean
+              default: true
+              description: Daily water reminder notifications
+            workout_today_reminder:
+              type: boolean
+              default: true
+              description: Workout reminder notifications
+            email_notifications:
+              type: boolean
+              default: true
+              description: Email notifications enabled
+            in_app_notifications:
+              type: boolean
+              default: true
+              description: In-app notifications enabled
+    responses:
+      201:
+        description: Notification preferences created successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            preferences:
+              type: object
+              properties:
+                preference_id:
+                  type: integer
+                client_id:
+                  type: string
+                daily_water_reminder:
+                  type: boolean
+                workout_today_reminder:
+                  type: boolean
+                email_notifications:
+                  type: boolean
+                in_app_notifications:
+                  type: boolean
+                created_at:
+                  type: string
+                  format: date-time
+                updated_at:
+                  type: string
+                  format: date-time
+      400:
+        description: Missing client_id
+      404:
+        description: Client not found
+      409:
+        description: Preferences already exist for this client
+      500:
+        description: Server error
     """
     data = request.get_json()
 
@@ -112,10 +179,46 @@ def create_notification_preferences():
 
 
 @notification_preferences_bp.route("/<string:client_id>", methods=["GET"])
-
 def get_notification_preferences(client_id):
     """
-    Fetch notification preferences for a client.
+    Get notification preferences for a client.
+    ---
+    tags:
+      - Notification Preferences
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+        description: Client ID
+    responses:
+      200:
+        description: Notification preferences
+        schema:
+          type: object
+          properties:
+            preference_id:
+              type: integer
+            client_id:
+              type: string
+            daily_water_reminder:
+              type: boolean
+            workout_today_reminder:
+              type: boolean
+            email_notifications:
+              type: boolean
+            in_app_notifications:
+              type: boolean
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+      404:
+        description: Preferences not found
+      500:
+        description: Server error
     """
     conn = get_conn()
     cursor = conn.cursor()
@@ -146,7 +249,69 @@ def get_notification_preferences(client_id):
 @notification_preferences_bp.route("/<string:client_id>", methods=["PUT"])
 def update_notification_preferences(client_id):
     """
-    Update one or more notification preference fields.
+    Update notification preferences for a client.
+    ---
+    tags:
+      - Notification Preferences
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+        description: Client ID
+      - name: preference_updates
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            daily_water_reminder:
+              type: boolean
+              description: Daily water reminder notifications
+            workout_today_reminder:
+              type: boolean
+              description: Workout reminder notifications
+            email_notifications:
+              type: boolean
+              description: Email notifications enabled
+            in_app_notifications:
+              type: boolean
+              description: In-app notifications enabled
+    responses:
+      200:
+        description: Notification preferences updated successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            preferences:
+              type: object
+              properties:
+                preference_id:
+                  type: integer
+                client_id:
+                  type: string
+                daily_water_reminder:
+                  type: boolean
+                workout_today_reminder:
+                  type: boolean
+                email_notifications:
+                  type: boolean
+                in_app_notifications:
+                  type: boolean
+                created_at:
+                  type: string
+                  format: date-time
+                updated_at:
+                  type: string
+                  format: date-time
+      400:
+        description: No valid fields provided
+      404:
+        description: Preferences not found
+      500:
+        description: Server error
     """
     data = request.get_json()
 

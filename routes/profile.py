@@ -5,12 +5,30 @@ profile_bp = Blueprint("profile", __name__) # create blueprint for profile page 
 
 @profile_bp.route("/", methods=["GET"])
 def get_profile():
-
+    """
+    Get a user's profile by client_id.
+    ---
+    tags:
+      - Profile
+    parameters:
+      - name: client_id
+        in: query
+        required: true
+        type: string
+        description: The client's unique ID
+    responses:
+      200:
+        description: User profile data
+      400:
+        description: client_id is required
+      404:
+        description: User not found
+    """
     client_id = request.args.get("client_id")
 
     if not client_id:
         return jsonify({"error": "clientID is required"}), 400 # throw error if no client id -- Aiden
-    
+
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -29,28 +47,60 @@ def get_profile():
 
     if not user:
         return jsonify({"error": "User not found"}), 404 #throw error if no user -- Aiden
-    
+
     return jsonify(user)
 
 
 # use case 2.2 - updating weight and height -- Aiden
 @profile_bp.route("/physical", methods=["PUT"])
 def update_physical():
+    """
+    Update a user's weight and/or height.
+    ---
+    tags:
+      - Profile
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - client_id
+          properties:
+            client_id:
+              type: string
+            weight:
+              type: number
+              example: 175.5
+            height:
+              type: number
+              example: 70.0
+    responses:
+      200:
+        description: Physical info updated successfully
+      400:
+        description: client_id required or no fields provided
+      404:
+        description: User not found
+      500:
+        description: Server error
+    """
     data = request.get_json()
 
     if not data:
         return jsonify({"error": "Request body is required"}), 400
-    
+
     client_id = data.get("client_id")
     weight = data.get("weight")
     height = data.get("height")
 
     if not client_id:
         return jsonify({"error": "clientID is required"}), 400
-    
+
     if weight is None and height is None:
         return jsonify({"error": "Must provide weight and/or height to update"}), 400
-    
+
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -59,9 +109,9 @@ def update_physical():
         cursor.execute("SELECT client_id FROM client WHERE client_id = %s", (client_id,))
         user = cursor.fetchone()
 
-        if not user: 
+        if not user:
             return jsonify({"error": "User not found"}), 404
-        
+
         # build update query dynamically based on provided -- Aiden
 
         fields = []
@@ -83,12 +133,12 @@ def update_physical():
         conn.commit()
 
         return jsonify({"message": "Physical info updated successfully"}), 200
-    
+
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 500
-    
-    finally: 
+
+    finally:
         cursor.close()
         conn.close()
 
@@ -96,13 +146,47 @@ def update_physical():
 
 @profile_bp.route("/goals", methods=["PUT"])
 def update_goals():
+    """
+    Update a client's fitness goals.
+    ---
+    tags:
+      - Profile
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - client_id
+          properties:
+            client_id:
+              type: string
+            goal_weight:
+              type: number
+            steps_per_day:
+              type: integer
+            time_active_per_day:
+              type: integer
+            workout_days_per_week:
+              type: integer
+    responses:
+      200:
+        description: Goals updated successfully
+      400:
+        description: client_id required or no goal fields provided
+      404:
+        description: No goals found — complete survey first
+      500:
+        description: Server error
+    """
     data = request.get_json()
     if not data:
         return jsonify({"error": "Request body is required"}), 400
     client_id = data.get("client_id")
     if not client_id:
         return jsonify({"error": "client_id is required"}), 400
-    
+
     goal_weight = data.get("goal_weight")
     steps_per_day = data.get("steps_per_day")
     time_active_per_day = data.get("time_active_per_day")
@@ -111,7 +195,7 @@ def update_goals():
     #make sure >= 1 goal field provided -- aiden
     if all(v is None for v in [goal_weight, steps_per_day, time_active_per_day, workout_days_per_week]):
         return jsonify({"error": "Must provide at least one goal field to update"}), 400
-    
+
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -122,7 +206,7 @@ def update_goals():
 
         if not goal:
             return jsonify({"error": "No goals found for this client. Complete the survey first."}), 404
-        
+
         # build the update query dynamically
 
         fields = []
@@ -153,32 +237,61 @@ def update_goals():
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 500
-    
-    finally: 
+
+    finally:
         cursor.close()
         conn.close()
 
 # use case 2.3 - updating coach qualifications/certifications -- Aiden'
 @profile_bp.route("/certifications", methods=["PUT"])
 def update_certifications():
+    """
+    Update a coach's certifications.
+    ---
+    tags:
+      - Profile
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - client_id
+            - certifications
+          properties:
+            client_id:
+              type: string
+            certifications:
+              type: string
+    responses:
+      200:
+        description: Certifications updated successfully
+      400:
+        description: Required fields missing
+      404:
+        description: Coach not found
+      500:
+        description: Server error
+    """
     data = request.get_json()
 
     if not data:
         return jsonify({"error": "Request body is required"}), 400
-    
+
     client_id = data.get("client_id")
     certifications = data.get("certifications")
 
     if not client_id:
         return jsonify({"error": "client_id is required"}), 400
-    
+
     if certifications is None:
         return jsonify({"error": "certifications field is required"}), 400
-    
+
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
-    try: 
+    try:
         # check if client is a coach -- Aiden
         cursor.execute("SELECT coach_id FROM coach WHERE coach_id = %s", (client_id,))
         coach = cursor.fetchone()
@@ -193,18 +306,34 @@ def update_certifications():
         conn.commit()
 
         return jsonify({"message": "Certifications updated successfully"}), 200
-    
+
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 500
-    
+
     finally:
         cursor.close()
         conn.close()
-        
+
 # goals (GET)
 @profile_bp.route("/goals/<string:client_id>", methods=["GET"])
 def get_goals(client_id):
+    """
+    Get a client's fitness goals.
+    ---
+    tags:
+      - Profile
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+    responses:
+      200:
+        description: Goals data, or zeros if no goals set
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -219,9 +348,9 @@ def get_goals(client_id):
                 "time_active": 0,
                 "workout_days_per_week": 0
             }), 200
-        
+
         return jsonify(goals), 200
-    
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
@@ -231,6 +360,30 @@ def get_goals(client_id):
 
 @profile_bp.route("/coach/<string:coach_id>", methods=["GET", "PUT"])
 def manage_coach_data(coach_id):
+    """
+    Get or update a coach's pricing and availability.
+    ---
+    tags:
+      - Profile
+    parameters:
+      - name: coach_id
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          type: object
+          properties:
+            pricing:
+              type: number
+            availability:
+              type: string
+    responses:
+      200:
+        description: Coach data retrieved or updated
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -242,8 +395,8 @@ def manage_coach_data(coach_id):
     if request.method == "PUT":
         data = request.get_json()
         cursor.execute("""
-            UPDATE coach 
-            SET pricing = %s, availability = %s 
+            UPDATE coach
+            SET pricing = %s, availability = %s
             WHERE coach_id = %s
         """, (data['pricing'], data['availability'], coach_id))
         conn.commit()
@@ -251,6 +404,32 @@ def manage_coach_data(coach_id):
 
 @profile_bp.route("/fitness_coach/<string:coach_id>", methods=["GET", "PUT"])
 def manage_fitness_coach(coach_id):
+    """
+    Get or update a fitness coach's certifications.
+    ---
+    tags:
+      - Profile
+    parameters:
+      - name: coach_id
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          type: object
+          properties:
+            certifications:
+              type: string
+    responses:
+      200:
+        description: Fitness coach data retrieved or updated
+      400:
+        description: Coach not in fitness table
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -271,13 +450,13 @@ def manage_fitness_coach(coach_id):
 
             if exists:
                 cursor.execute("""
-                    UPDATE fitness_coach 
-                    SET certifications = %s 
+                    UPDATE fitness_coach
+                    SET certifications = %s
                     WHERE coach_id = %s
                 """, (certifications, coach_id))
             else:
                 cursor.execute("""
-                    INSERT INTO fitness_coach (coach_id, certifications) 
+                    INSERT INTO fitness_coach (coach_id, certifications)
                     VALUES (%s, %s)
                 """, (coach_id, certifications))
 
@@ -289,10 +468,36 @@ def manage_fitness_coach(coach_id):
         return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
-        conn.close()  
+        conn.close()
 
 @profile_bp.route("/nutrition_coach/<string:coach_id>", methods=["GET", "PUT"])
 def manage_nutrition_coach(coach_id):
+    """
+    Get or update a nutrition coach's certifications.
+    ---
+    tags:
+      - Profile
+    parameters:
+      - name: coach_id
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: false
+        schema:
+          type: object
+          properties:
+            certifications:
+              type: string
+    responses:
+      200:
+        description: Nutrition coach data retrieved or updated
+      400:
+        description: Coach not in nutrition table
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -313,13 +518,13 @@ def manage_nutrition_coach(coach_id):
 
             if exists:
                 cursor.execute("""
-                    UPDATE nutrition_coach 
-                    SET certifications = %s 
+                    UPDATE nutrition_coach
+                    SET certifications = %s
                     WHERE coach_id = %s
                 """, (certifications, coach_id))
             else:
                 cursor.execute("""
-                    INSERT INTO nutrition_coach (coach_id, certifications) 
+                    INSERT INTO nutrition_coach (coach_id, certifications)
                     VALUES (%s, %s)
                 """, (coach_id, certifications))
 
@@ -331,21 +536,56 @@ def manage_nutrition_coach(coach_id):
         return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
-        conn.close()  
+        conn.close()
 
 # use case 1.6 logout -- Aiden
 @profile_bp.route("/logout", methods=["POST"])
 def logout():
+    """
+    Log out the current user (session-less placeholder).
+    ---
+    tags:
+      - Authentication
+    responses:
+      200:
+        description: Logged out successfully
+    """
     return jsonify({"message": "Logged out successfully"}), 200
 
 # use case 1.7 deleting -- Aiden
 @profile_bp.route("/", methods=["DELETE"])
 def delete_account():
+    """
+    Delete a user account and all associated data.
+    ---
+    tags:
+      - Profile
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - client_id
+          properties:
+            client_id:
+              type: string
+    responses:
+      200:
+        description: Account deleted successfully
+      400:
+        description: client_id is required
+      404:
+        description: User not found
+      500:
+        description: Server error
+    """
     data = request.get_json()
 
     if not data or "client_id" not in data:
         return jsonify({"error": "client_id is required"}), 400
-    
+
     client_id = data.get("client_id")
 
     conn = get_conn()
@@ -357,7 +597,7 @@ def delete_account():
 
         if not user:
             return jsonify({"error": "User not found"}), 404
-        
+
         # delete dependencies first -- aiden
 
         cursor.execute("DELETE FROM messages WHERE sender_id = %s OR receiver_id = %s", (client_id, client_id))
@@ -378,11 +618,11 @@ def delete_account():
         conn.commit()
 
         return jsonify({"message": "Account deleted successfully"}), 200
-    
+
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 500
-    
+
     finally:
         cursor.close()
         conn.close()

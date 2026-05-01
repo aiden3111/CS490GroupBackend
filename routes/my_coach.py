@@ -6,6 +6,45 @@ my_coach_bp = Blueprint("my_coach", __name__)
 
 @my_coach_bp.route("/<string:client_id>", methods=["GET"])
 def get_my_coach(client_id):
+    """
+    Get the assigned coach for a client.
+    ---
+    tags:
+      - Coach
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+        description: Client ID
+    responses:
+      200:
+        description: Coach information
+        schema:
+          type: object
+          properties:
+            coach_id:
+              type: string
+            first_name:
+              type: string
+            last_name:
+              type: string
+            availability:
+              type: string
+            pricing:
+              type: number
+            fitness_certifications:
+              type: string
+            nutrition_certifications:
+              type: string
+            specialty:
+              type: string
+              enum: [Fitness & Nutrition, Fitness, Nutrition, none]
+      202:
+        description: No coach assigned (returns null)
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 

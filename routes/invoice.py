@@ -5,6 +5,34 @@ invoice_bp = Blueprint("invoice", __name__)
 
 @invoice_bp.route("/<string:client_id>", methods=["GET"])
 def get_invoices(client_id):
+    """
+    Get all invoices for a client.
+    ---
+    tags:
+      - Invoices
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+        description: Client ID
+    responses:
+      200:
+        description: List of client invoices
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              invoice_id:
+                type: integer
+              client_id:
+                type: string
+              amount:
+                type: number
+              billing_month:
+                type: string
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -23,6 +51,25 @@ def get_invoices(client_id):
 
 @invoice_bp.route("/download/<int:invoice_id>", methods=["GET"])
 def download_invoice(invoice_id):
+    """
+    Download an invoice as a text file.
+    ---
+    tags:
+      - Invoices
+    parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        type: integer
+        description: Invoice ID to download
+    responses:
+      200:
+        description: Invoice text file download
+        schema:
+          type: file
+      404:
+        description: Invoice not found
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 

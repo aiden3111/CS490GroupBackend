@@ -6,6 +6,60 @@ landing_page_bp = Blueprint("landing_page", __name__)
 #Client landing page to display top coaches and client trackers
 @landing_page_bp.route("/<string:client_id>", methods=["GET"])
 def get_landing_page(client_id):
+    """
+    Get landing page data for a client including top coaches and mood trackers.
+    ---
+    tags:
+      - Landing Page
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+        description: Client ID
+    responses:
+      200:
+        description: Landing page data
+        schema:
+          type: object
+          properties:
+            top_coaches:
+              type: array
+              items:
+                type: object
+                properties:
+                  coach_id:
+                    type: string
+                  first_name:
+                    type: string
+                  last_name:
+                    type: string
+                  average_rating:
+                    type: number
+                  specialty:
+                    type: string
+            trackers:
+              type: array
+              items:
+                type: object
+                properties:
+                  log_date:
+                    type: string
+                    format: date
+                  mood_score:
+                    type: integer
+                  mood_label:
+                    type: string
+                  created_at:
+                    type: string
+                    format: date-time
+                  notes:
+                    type: string
+            user_name:
+              type: string
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 

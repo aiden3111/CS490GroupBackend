@@ -5,6 +5,41 @@ review_bp = Blueprint("review", __name__)
 
 @review_bp.route("/coach/<string:coach_id>", methods=["GET"])
 def get_reviews(coach_id):
+    """
+    Get all reviews for a coach.
+    ---
+    tags:
+      - Reviews
+    parameters:
+      - name: coach_id
+        in: path
+        required: true
+        type: string
+        description: Coach ID
+    responses:
+      200:
+        description: List of coach reviews
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              client_id:
+                type: string
+              rating:
+                type: integer
+                minimum: 1
+                maximum: 5
+              comment:
+                type: string
+              created_at:
+                type: string
+                format: date-time
+              first_name:
+                type: string
+              last_name:
+                type: string
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 

@@ -6,6 +6,55 @@ reports_bp = Blueprint("reports", __name__)
 
 @reports_bp.route("/", methods=["POST"])
 def create_report():
+    """
+    Submit a report against another user.
+    ---
+    tags:
+      - Reports
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - reporter_id
+            - reported_user_id
+            - reason
+          properties:
+            reporter_id:
+              type: string
+              description: ID of the user submitting the report
+            reported_user_id:
+              type: string
+              description: ID of the user being reported
+            reason:
+              type: string
+              description: Reason for the report
+            details:
+              type: string
+              description: Additional details about the report
+    responses:
+      201:
+        description: Report submitted successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            report_id:
+              type: integer
+            status:
+              type: string
+      400:
+        description: Missing required fields
+      404:
+        description: Reporter or reported user not found
+      409:
+        description: Open report already exists against this user
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 

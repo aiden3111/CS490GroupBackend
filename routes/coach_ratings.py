@@ -6,6 +6,49 @@ coach_ratings_bp = Blueprint("coach_ratings", __name__)
 #let a client give the coach a rating and review
 @coach_ratings_bp.route("/<string:coach_id>/rate", methods=["POST"])
 def rate_coach(coach_id):
+    """
+    Submit a rating and review for a coach (clients can only review their assigned coach).
+    ---
+    tags:
+      - Coach
+    parameters:
+      - name: coach_id
+        in: path
+        required: true
+        type: string
+        description: Coach ID to review
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - rating
+            - client_id
+          properties:
+            rating:
+              type: integer
+              minimum: 1
+              maximum: 5
+              description: Rating from 1-5
+            comment:
+              type: string
+              description: Optional review comment
+            client_id:
+              type: string
+              description: Client ID submitting the review
+    responses:
+      200:
+        description: Review submitted successfully
+      400:
+        description: Missing required fields
+      403:
+        description: Can only review assigned coach
+      404:
+        description: Client not found
+      500:
+        description: Server error
+    """
     data = request.get_json()
     rating = data.get("rating")
     comment = data.get("comment")

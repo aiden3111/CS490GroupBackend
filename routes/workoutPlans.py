@@ -5,6 +5,52 @@ workoutPlansPage = Blueprint("workoutPlansPage", __name__)
 
 @workoutPlansPage.route("/", methods=["POST"])
 def create_workout_plan():
+    """
+    Create a new workout plan.
+    ---
+    tags:
+      - Workout Plans
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - frequency
+            - client_id
+            - difficulty
+          properties:
+            created_by:
+              type: string
+              description: Coach or client ID who created the plan
+            frequency:
+              type: string
+              example: 3x per week
+            client_id:
+              type: string
+              description: Client ID for whom the plan is created
+            difficulty:
+              type: string
+              example: Beginner
+            is_draft:
+              type: boolean
+              default: true
+    responses:
+      201:
+        description: Workout plan created successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            workout_plan_id:
+              type: integer
+      400:
+        description: Required fields missing
+      500:
+        description: Server error
+    """
     data = request.get_json()
 
     created_by = data.get("created_by")
@@ -44,6 +90,46 @@ def create_workout_plan():
 
 @workoutPlansPage.route("/client/<string:client_id>", methods=["GET"])
 def get_client_workout_plans(client_id):
+    """
+    Get all workout plans for a specific client.
+    ---
+    tags:
+      - Workout Plans
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+        description: The client ID
+    responses:
+      200:
+        description: List of workout plans
+        schema:
+          type: object
+          properties:
+            workout_plans:
+              type: array
+              items:
+                type: object
+                properties:
+                  workout_plan_id:
+                    type: integer
+                  created:
+                    type: string
+                    format: date-time
+                  created_by:
+                    type: string
+                  frequency:
+                    type: string
+                  client_id:
+                    type: string
+                  difficulty:
+                    type: string
+                  is_draft:
+                    type: boolean
+      500:
+        description: Server error
+    """
     try:
         conn = get_conn()
         cursor = conn.cursor(dictionary=True)
@@ -75,6 +161,79 @@ def get_client_workout_plans(client_id):
 
 @workoutPlansPage.route("/<int:workout_plan_id>", methods=["GET"])
 def get_workout_plan(workout_plan_id):
+    """
+    Get a specific workout plan with its exercises grouped by day.
+    ---
+    tags:
+      - Workout Plans
+    parameters:
+      - name: workout_plan_id
+        in: path
+        required: true
+        type: integer
+        description: The workout plan ID
+    responses:
+      200:
+        description: Workout plan with exercises
+        schema:
+          type: object
+          properties:
+            workout_plan:
+              type: object
+              properties:
+                workout_plan_id:
+                  type: integer
+                created:
+                  type: string
+                  format: date-time
+                created_by:
+                  type: string
+                frequency:
+                  type: string
+                client_id:
+                  type: string
+                difficulty:
+                  type: string
+                is_draft:
+                  type: boolean
+            exercises_by_day:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    workout_plan_id:
+                      type: integer
+                    day_of_week:
+                      type: string
+                    order_in_day:
+                      type: integer
+                    sets:
+                      type: integer
+                    repetitions:
+                      type: integer
+                    exercise_id:
+                      type: integer
+                    exercise_name:
+                      type: string
+                    muscle_group:
+                      type: string
+                    equipment:
+                      type: string
+                    category:
+                      type: string
+                    example_video:
+                      type: string
+                    is_custom:
+                      type: boolean
+      404:
+        description: Workout plan not found
+      500:
+        description: Server error
+    """
     try:
         conn = get_conn()
         cursor = conn.cursor(dictionary=True)
@@ -148,6 +307,37 @@ def get_workout_plan(workout_plan_id):
 
 @workoutPlansPage.route("/<int:workout_plan_id>", methods=["PUT"])
 def update_workout_plan(workout_plan_id):
+    """
+    Update an existing workout plan.
+    ---
+    tags:
+      - Workout Plans
+    parameters:
+      - name: workout_plan_id
+        in: path
+        required: true
+        type: integer
+        description: The workout plan ID
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            frequency:
+              type: string
+            difficulty:
+              type: string
+            is_draft:
+              type: boolean
+    responses:
+      200:
+        description: Workout plan updated successfully
+      404:
+        description: Workout plan not found
+      500:
+        description: Server error
+    """
     data = request.get_json()
 
     frequency = data.get("frequency")
@@ -185,6 +375,25 @@ def update_workout_plan(workout_plan_id):
 
 @workoutPlansPage.route("/<int:workout_plan_id>", methods=["DELETE"])
 def delete_workout_plan(workout_plan_id):
+    """
+    Delete a workout plan and all its associated exercises.
+    ---
+    tags:
+      - Workout Plans
+    parameters:
+      - name: workout_plan_id
+        in: path
+        required: true
+        type: integer
+        description: The workout plan ID
+    responses:
+      200:
+        description: Workout plan deleted successfully
+      404:
+        description: Workout plan not found
+      500:
+        description: Server error
+    """
     try:
         conn = get_conn()
         cursor = conn.cursor()

@@ -6,6 +6,63 @@ workoutLogPage = Blueprint("workoutLogPage", __name__)
 
 @workoutLogPage.route('', methods=['POST'])
 def log_workout():
+    """
+    Log a workout entry for a client.
+    ---
+    tags:
+      - Workout Logs
+    parameters:
+      - name: workout_data
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - client_id
+            - log_date
+            - exercise_id
+          properties:
+            client_id:
+              type: string
+              description: Client ID
+            log_date:
+              type: string
+              format: date
+              description: Date of the workout
+            exercise_id:
+              type: integer
+              description: Exercise ID
+            sets:
+              type: integer
+              description: Number of sets completed
+            reps:
+              type: integer
+              description: Number of reps completed
+            weight:
+              type: number
+              description: Weight used
+            cardio_type:
+              type: string
+              description: Type of cardio exercise
+            cardio_duration:
+              type: integer
+              description: Duration of cardio in minutes
+            notes:
+              type: string
+              description: Additional notes
+    responses:
+      200:
+        description: Workout logged successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+      400:
+        description: Required fields are missing
+      500:
+        description: Server error
+    """
     data = request.get_json()
     client_id = data.get('client_id')
     log_date = data.get('log_date')
@@ -36,6 +93,52 @@ def log_workout():
 
 @workoutLogPage.route('/<int:log_id>', methods=['PUT'])
 def edit_workout(log_id):
+    """
+    Edit an existing workout log entry.
+    ---
+    tags:
+      - Workout Logs
+    parameters:
+      - name: log_id
+        in: path
+        required: true
+        type: integer
+        description: Workout log ID
+      - name: workout_updates
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            sets:
+              type: integer
+              description: Number of sets completed
+            reps:
+              type: integer
+              description: Number of reps completed
+            weight:
+              type: number
+              description: Weight used
+            cardio_type:
+              type: string
+              description: Type of cardio exercise
+            cardio_duration:
+              type: integer
+              description: Duration of cardio in minutes
+            notes:
+              type: string
+              description: Additional notes
+    responses:
+      200:
+        description: Workout log updated successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+      500:
+        description: Server error
+    """
     data = request.get_json()
     sets = data.get('sets')
     reps = data.get('reps')
@@ -60,6 +163,30 @@ def edit_workout(log_id):
 
 @workoutLogPage.route('/<int:log_id>', methods=['DELETE'])
 def delete_workout(log_id):
+    """
+    Delete a workout log entry.
+    ---
+    tags:
+      - Workout Logs
+    parameters:
+      - name: log_id
+        in: path
+        required: true
+        type: integer
+        description: Workout log ID to delete
+    responses:
+      200:
+        description: Workout log deleted successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+      404:
+        description: Workout log not found
+      500:
+        description: Server error
+    """
     try:
         conn = get_conn()
         cursor = conn.cursor()
@@ -85,6 +212,53 @@ def delete_workout(log_id):
 
 @workoutLogPage.route('/history/<string:client_id>', methods=['GET'])
 def workout_history(client_id):
+    """
+    Get workout history for a client, grouped by date.
+    ---
+    tags:
+      - Workout Logs
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+        description: Client ID
+    responses:
+      200:
+        description: Workout history grouped by date
+        schema:
+          type: object
+          properties:
+            workout_history:
+              type: object
+              description: Object with dates as keys and arrays of workout logs as values
+              additionalProperties:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    log_id:
+                      type: integer
+                    log_date:
+                      type: string
+                      format: date
+                    exercise_id:
+                      type: integer
+                    sets_completed:
+                      type: integer
+                    reps_completed:
+                      type: integer
+                    weight:
+                      type: number
+                    cardio_type:
+                      type: string
+                    cardio_duration:
+                      type: integer
+                    notes:
+                      type: string
+      500:
+        description: Server error
+    """
     try:
         conn = get_conn()
         cursor = conn.cursor(dictionary=True)

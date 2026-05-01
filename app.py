@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 from flask_socketio import SocketIO, emit, join_room
+from flasgger import Swagger
 from db import get_conn
 from routes.login import login_bp
 from routes.google_login import google_login_bp
@@ -78,6 +79,17 @@ def handle_message(data):
 
 app.url_map.strict_slashes = False
 CORS(app)
+
+Swagger(app, template={
+    "info": {
+        "title": "FitApp API",
+        "description": "REST API for the FitApp fitness coaching platform",
+        "version": "1.0.0",
+    },
+    "basePath": "/",
+    "consumes": ["application/json"],
+    "produces": ["application/json"],
+})
 
 @app.route("/")
 def home():

@@ -10,6 +10,31 @@ google_login_bp = Blueprint("google-login", __name__)
 
 @google_login_bp.route('/', methods=['POST'])
 def google_login():
+    """
+    Authenticate or pre-register a user via Google OAuth token.
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - token
+          properties:
+            token:
+              type: string
+              description: Google ID token from the frontend OAuth flow
+    responses:
+      200:
+        description: Returns user data if account exists, or needs_registration flag with prefilled info
+      400:
+        description: Token is required
+      401:
+        description: Invalid token
+    """
     data = request.get_json()
     token = data.get('token')
     

@@ -6,6 +6,42 @@ nutrition_plan_modifications_bp = Blueprint("nutrition_plan_modifications", __na
 #Let the coach view all their clients and their nutrition plans
 @nutrition_plan_modifications_bp.route('/<string:coach_id>', methods=['GET'])
 def get_clients_nutrition_plans(coach_id):
+    """
+    Get all nutrition plans created by a coach for their clients.
+    ---
+    tags:
+      - Nutrition
+    parameters:
+      - name: coach_id
+        in: path
+        required: true
+        type: string
+        description: Coach ID
+    responses:
+      200:
+        description: List of clients and their nutrition plans
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              client_id:
+                type: string
+              first_name:
+                type: string
+              last_name:
+                type: string
+              nutrition_plan_id:
+                type: string
+              category:
+                type: string
+              created_by:
+                type: string
+      404:
+        description: Coach not found
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
     try:
@@ -32,6 +68,66 @@ def get_clients_nutrition_plans(coach_id):
 #let the coach edit a specific nutrition plan for a specific client
 @nutrition_plan_modifications_bp.route('/<string:coach_id>/<string:client_id>/<string:nutrition_plan_id>', methods=['PUT'])
 def update_nutrition_plan(coach_id, client_id, nutrition_plan_id):
+    """
+    Update meals in a nutrition plan (coach only).
+    ---
+    tags:
+      - Nutrition
+    parameters:
+      - name: coach_id
+        in: path
+        required: true
+        type: string
+        description: Coach ID (must own the plan)
+      - name: client_id
+        in: path
+        required: true
+        type: string
+        description: Client ID
+      - name: nutrition_plan_id
+        in: path
+        required: true
+        type: string
+        description: Nutrition plan ID
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - meals
+          properties:
+            meals:
+              type: array
+              items:
+                type: object
+                properties:
+                  meal_id:
+                    type: integer
+                  meal_name:
+                    type: string
+                  calories:
+                    type: number
+                  time_of_day:
+                    type: string
+                  description:
+                    type: string
+                  protein:
+                    type: number
+                  carbs:
+                    type: number
+                  fats:
+                    type: number
+                  day_number:
+                    type: integer
+    responses:
+      200:
+        description: Nutrition plan updated successfully
+      403:
+        description: Unauthorized (not the coach for this plan)
+      500:
+        description: Server error
+    """
     data = request.get_json()
     meals = data.get('meals')
     conn = get_conn()
@@ -66,6 +162,64 @@ def update_nutrition_plan(coach_id, client_id, nutrition_plan_id):
 #let the coach create meals for a client
 @nutrition_plan_modifications_bp.route('/<string:coach_id>/<string:client_id>/<string:nutrition_plan_id>/meals', methods=['POST'])
 def add_meals_to_nutrition_plan(coach_id, client_id, nutrition_plan_id):
+    """
+    Add meals to a nutrition plan (coach only).
+    ---
+    tags:
+      - Nutrition
+    parameters:
+      - name: coach_id
+        in: path
+        required: true
+        type: string
+        description: Coach ID (must own the plan)
+      - name: client_id
+        in: path
+        required: true
+        type: string
+        description: Client ID
+      - name: nutrition_plan_id
+        in: path
+        required: true
+        type: string
+        description: Nutrition plan ID
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - meals
+          properties:
+            meals:
+              type: array
+              items:
+                type: object
+                properties:
+                  meal_name:
+                    type: string
+                  calories:
+                    type: number
+                  time_of_day:
+                    type: string
+                  description:
+                    type: string
+                  protein:
+                    type: number
+                  carbs:
+                    type: number
+                  fats:
+                    type: number
+                  day_number:
+                    type: integer
+    responses:
+      201:
+        description: Meals added successfully
+      403:
+        description: Unauthorized (not the coach for this plan)
+      500:
+        description: Server error
+    """
     data = request.get_json()
     meals = data.get('meals')
     conn = get_conn()
@@ -99,6 +253,42 @@ def add_meals_to_nutrition_plan(coach_id, client_id, nutrition_plan_id):
 #let the coach delete a meal from a nutrition plan
 @nutrition_plan_modifications_bp.route('/<string:coach_id>/<string:client_id>/<string:nutrition_plan_id>/meals/<string:meal_id>', methods=['DELETE'])
 def delete_meal_from_nutrition_plan(coach_id, client_id, nutrition_plan_id, meal_id):
+    """
+    Delete a meal from a nutrition plan (coach only).
+    ---
+    tags:
+      - Nutrition
+    parameters:
+      - name: coach_id
+        in: path
+        required: true
+        type: string
+        description: Coach ID (must own the plan)
+      - name: client_id
+        in: path
+        required: true
+        type: string
+        description: Client ID
+      - name: nutrition_plan_id
+        in: path
+        required: true
+        type: string
+        description: Nutrition plan ID
+      - name: meal_id
+        in: path
+        required: true
+        type: string
+        description: Meal ID
+    responses:
+      200:
+        description: Meal deleted successfully
+      403:
+        description: Unauthorized (not the coach for this plan)
+      404:
+        description: Meal not found
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
     try:
@@ -131,6 +321,44 @@ def delete_meal_from_nutrition_plan(coach_id, client_id, nutrition_plan_id, meal
 #Assign/create the meal plan
 @nutrition_plan_modifications_bp.route('/create_plan', methods=['POST'])
 def create_nutrition_plan_header():
+    """
+    Create a new nutrition plan header for a client.
+    ---
+    tags:
+      - Nutrition
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - client_id
+            - coach_id
+            - plan_name
+          properties:
+            client_id:
+              type: string
+              description: Client ID
+            coach_id:
+              type: string
+              description: Coach ID creating the plan
+            plan_name:
+              type: string
+              description: Name/category of the nutrition plan
+    responses:
+      201:
+        description: Nutrition plan created successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            nutrition_plan_id:
+              type: string
+      500:
+        description: Server error
+    """
     data = request.get_json()
     
     client_id = data.get('client_id')
@@ -161,6 +389,48 @@ def create_nutrition_plan_header():
 
 @nutrition_plan_modifications_bp.route('/meals/<int:nutrition_plan_id>', methods=['GET'])
 def get_meals_for_plan(nutrition_plan_id):
+    """
+    Get all meals for a specific nutrition plan.
+    ---
+    tags:
+      - Nutrition
+    parameters:
+      - name: nutrition_plan_id
+        in: path
+        required: true
+        type: integer
+        description: Nutrition plan ID
+    responses:
+      200:
+        description: List of meals in the nutrition plan
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              meal_id:
+                type: integer
+              meal_name:
+                type: string
+              calories:
+                type: number
+              time_of_day:
+                type: string
+              description:
+                type: string
+              protein:
+                type: number
+              carbs:
+                type: number
+              fats:
+                type: number
+              day_number:
+                type: integer
+              nutrition_plan_id:
+                type: integer
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
     try:

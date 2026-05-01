@@ -1,42 +1,41 @@
 from flask import Blueprint, request, jsonify
 from db import get_conn
 
-# routes for:
-# retrieve info on single client
-# update client information
-# delete a client
-# view all clients
-# assign only one coach per client
-
 clients_bp = Blueprint("clients", __name__)
 
 
-# Get a single client by client_id
 @clients_bp.route("/<string:client_id>", methods=["GET"])
 def get_client(client_id):
+    """
+    Get a single client by ID.
+    ---
+    tags:
+      - Clients
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+    responses:
+      200:
+        description: Client data
+      404:
+        description: Client not found
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
     try:
         cursor.execute("""
-            SELECT 
-                client_id,
-                first_name,
-                last_name,
-                dob,
-                weight,
-                height,
-                gender,
-                coach_id,
-                subscription,
-                role,
-                email,
-                phone_number,
-                signup_date
+            SELECT
+                client_id, first_name, last_name, dob, weight, height,
+                gender, coach_id, subscription, role, email, phone_number, signup_date
             FROM client
             WHERE client_id = %s
         """, (client_id,))
-        
+
         client = cursor.fetchone()
 
         if not client:
@@ -52,9 +51,54 @@ def get_client(client_id):
         conn.close()
 
 
-# Update the client profile
 @clients_bp.route("/<string:client_id>", methods=["PUT"])
 def update_client(client_id):
+    """
+    Update a client's full profile.
+    ---
+    tags:
+      - Clients
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            first_name:
+              type: string
+            last_name:
+              type: string
+            dob:
+              type: string
+            weight:
+              type: number
+            height:
+              type: number
+            gender:
+              type: string
+            coach_id:
+              type: string
+            subscription:
+              type: string
+            email:
+              type: string
+            phone_number:
+              type: string
+    responses:
+      200:
+        description: Client updated successfully
+      400:
+        description: Request body is required
+      404:
+        description: Client not found
+      500:
+        description: Server error
+    """
     data = request.get_json()
 
     if not data:
@@ -75,12 +119,7 @@ def update_client(client_id):
     cursor = conn.cursor(dictionary=True)
 
     try:
-        cursor.execute("""
-            SELECT client_id
-            FROM client
-            WHERE client_id = %s
-        """, (client_id,))
-        
+        cursor.execute("SELECT client_id FROM client WHERE client_id = %s", (client_id,))
         client = cursor.fetchone()
 
         if not client:
@@ -88,30 +127,10 @@ def update_client(client_id):
 
         cursor.execute("""
             UPDATE client
-            SET first_name = %s,
-                last_name = %s,
-                dob = %s,
-                weight = %s,
-                height = %s,
-                gender = %s,
-                coach_id = %s,
-                subscription = %s,
-                email = %s,
-                phone_number = %s
+            SET first_name = %s, last_name = %s, dob = %s, weight = %s, height = %s,
+                gender = %s, coach_id = %s, subscription = %s, email = %s, phone_number = %s
             WHERE client_id = %s
-        """, (
-            first_name,
-            last_name,
-            dob,
-            weight,
-            height,
-            gender,
-            coach_id,
-            subscription,
-            email,
-            phone_number,
-            client_id
-        ))
+        """, (first_name, last_name, dob, weight, height, gender, coach_id, subscription, email, phone_number, client_id))
 
         conn.commit()
         return jsonify({"message": "Client updated successfully"}), 200
@@ -125,9 +144,26 @@ def update_client(client_id):
         conn.close()
 
 
-# Delete a client account
 @clients_bp.route("/<string:client_id>", methods=["DELETE"])
 def delete_client(client_id):
+    """
+    Delete a client account.
+    ---
+    tags:
+      - Clients
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+    responses:
+      200:
+        description: Client account deleted
+      404:
+        description: Client not found
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor()
 
@@ -149,28 +185,27 @@ def delete_client(client_id):
         cursor.close()
         conn.close()
 
-#view all client list
+
 @clients_bp.route("/", methods=["GET"])
 def get_all_clients():
+    """
+    Get all clients sorted by last name.
+    ---
+    tags:
+      - Clients
+    responses:
+      200:
+        description: List of all clients
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
     try:
         cursor.execute("""
-            SELECT
-                client_id,
-                first_name,
-                last_name,
-                dob,
-                weight,
-                height,
-                gender,
-                coach_id,
-                subscription,
-                role,
-                email,
-                phone_number,
-                signup_date
+            SELECT client_id, first_name, last_name, dob, weight, height,
+                   gender, coach_id, subscription, role, email, phone_number, signup_date
             FROM client
             ORDER BY last_name, first_name
         """)
@@ -189,6 +224,36 @@ def get_all_clients():
 
 @clients_bp.route("/<string:client_id>/assign-coach", methods=["PUT"])
 def assign_coach(client_id):
+    """
+    Assign a coach to a client (one coach per client).
+    ---
+    tags:
+      - Clients
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - coach_id
+          properties:
+            coach_id:
+              type: string
+    responses:
+      200:
+        description: Coach assigned successfully
+      400:
+        description: coach_id required or client already has a coach
+      404:
+        description: Client or coach not found
+      500:
+        description: Server error
+    """
     data = request.get_json()
     new_coach_id = data.get("coach_id")
 
@@ -199,21 +264,13 @@ def assign_coach(client_id):
     cursor = conn.cursor(dictionary=True)
 
     try:
-        cursor.execute("""
-            SELECT client_id, coach_id
-            FROM client
-            WHERE client_id = %s
-        """, (client_id,))
+        cursor.execute("SELECT client_id, coach_id FROM client WHERE client_id = %s", (client_id,))
         client = cursor.fetchone()
 
         if not client:
             return jsonify({"error": "Client not found"}), 404
 
-        cursor.execute("""
-            SELECT coach_id
-            FROM coach
-            WHERE coach_id = %s
-        """, (new_coach_id,))
+        cursor.execute("SELECT coach_id FROM coach WHERE coach_id = %s", (new_coach_id,))
         coach = cursor.fetchone()
 
         if not coach:
@@ -222,11 +279,7 @@ def assign_coach(client_id):
         if client["coach_id"] is not None:
             return jsonify({"error": "Client already has a coach"}), 400
 
-        cursor.execute("""
-            UPDATE client
-            SET coach_id = %s
-            WHERE client_id = %s
-        """, (new_coach_id, client_id))
+        cursor.execute("UPDATE client SET coach_id = %s WHERE client_id = %s", (new_coach_id, client_id))
 
         conn.commit()
         return jsonify({"message": "Coach assigned successfully"}), 200
@@ -239,30 +292,38 @@ def assign_coach(client_id):
         cursor.close()
         conn.close()
 
-# View all clients assigned to a coach
+
 @clients_bp.route("/coach/<string:coach_id>", methods=["GET"])
 def get_coach_clients(coach_id):
+    """
+    Get all clients assigned to a specific coach.
+    ---
+    tags:
+      - Clients
+    parameters:
+      - name: coach_id
+        in: path
+        required: true
+        type: string
+    responses:
+      200:
+        description: List of clients for the coach
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
     try:
         cursor.execute("""
-            SELECT 
-                client_id,
-                first_name,
-                last_name,
-                email,
-                weight,
-                height,
-                gender,
-                signup_date
+            SELECT client_id, first_name, last_name, email, weight, height, gender, signup_date
             FROM client
             WHERE coach_id = %s
             ORDER BY last_name, first_name
         """, (coach_id,))
 
         clients = cursor.fetchall()
-        
+
         return jsonify(clients), 200
 
     except Exception as e:

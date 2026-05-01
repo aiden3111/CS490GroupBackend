@@ -7,6 +7,43 @@ exercises_bp = Blueprint("exercises", __name__)
 # Get all exercises
 @exercises_bp.route("/", methods=["GET"])
 def get_exercises():
+    """
+    Get all exercises with optional search filtering.
+    ---
+    tags:
+      - Exercises
+    parameters:
+      - name: search
+        in: query
+        type: string
+        description: Search term to filter exercises by name, muscle group, category, or equipment
+    responses:
+      200:
+        description: List of exercises
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              exercise_id:
+                type: integer
+              exercise_name:
+                type: string
+              equipment:
+                type: string
+              muscle_group:
+                type: string
+              category:
+                type: string
+              example_video:
+                type: string
+              is_custom:
+                type: boolean
+              created_by:
+                type: string
+      500:
+        description: Server error
+    """
 
     search_term = request.args.get("search")
     conn = get_conn()
@@ -50,6 +87,44 @@ def get_exercises():
 # Get one exercise by id
 @exercises_bp.route("/<int:exercise_id>", methods=["GET"])
 def get_exercise(exercise_id):
+    """
+    Get a single exercise by ID.
+    ---
+    tags:
+      - Exercises
+    parameters:
+      - name: exercise_id
+        in: path
+        required: true
+        type: integer
+        description: The exercise ID
+    responses:
+      200:
+        description: Exercise data
+        schema:
+          type: object
+          properties:
+            exercise_id:
+              type: integer
+            exercise_name:
+              type: string
+            equipment:
+              type: string
+            muscle_group:
+              type: string
+            category:
+              type: string
+            example_video:
+              type: string
+            is_custom:
+              type: boolean
+            created_by:
+              type: string
+      404:
+        description: Exercise not found
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -85,6 +160,56 @@ def get_exercise(exercise_id):
 # Create a new exercise
 @exercises_bp.route("/", methods=["POST"])
 def create_exercise():
+    """
+    Create a new exercise.
+    ---
+    tags:
+      - Exercises
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - exercise_name
+          properties:
+            exercise_name:
+              type: string
+              example: Push-ups
+            equipment:
+              type: string
+              example: Bodyweight
+            muscle_group:
+              type: string
+              example: Chest
+            category:
+              type: string
+              example: Strength
+            example_video:
+              type: string
+              example: https://example.com/video
+            is_custom:
+              type: boolean
+              default: true
+            created_by:
+              type: string
+              description: Client ID of the creator
+    responses:
+      201:
+        description: Exercise created successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            exercise_id:
+              type: integer
+      400:
+        description: Request body required or exercise_name missing
+      500:
+        description: Server error
+    """
     data = request.get_json()
 
     if not data:
@@ -145,6 +270,42 @@ def create_exercise():
 # Update an exercise
 @exercises_bp.route("/<int:exercise_id>", methods=["PUT"])
 def update_exercise(exercise_id):
+    """
+    Update an existing exercise.
+    ---
+    tags:
+      - Exercises
+    parameters:
+      - name: exercise_id
+        in: path
+        required: true
+        type: integer
+        description: The exercise ID
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            exercise_name:
+              type: string
+            equipment:
+              type: string
+            muscle_group:
+              type: string
+            category:
+              type: string
+            example_video:
+              type: string
+            created_by:
+              type: string
+              description: Client ID of the creator
+    responses:
+      200:
+        description: Exercise updated successfully
+      500:
+        description: Server error
+    """
     data = request.get_json()
     
   
@@ -181,6 +342,25 @@ def update_exercise(exercise_id):
 # Delete an exercise
 @exercises_bp.route("/<int:exercise_id>", methods=["DELETE"])
 def delete_exercise(exercise_id):
+    """
+    Delete an exercise by ID.
+    ---
+    tags:
+      - Exercises
+    parameters:
+      - name: exercise_id
+        in: path
+        required: true
+        type: integer
+        description: The exercise ID
+    responses:
+      200:
+        description: Exercise deleted successfully
+      404:
+        description: Exercise not found
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 

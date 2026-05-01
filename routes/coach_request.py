@@ -6,6 +6,22 @@ coach_request_bp = Blueprint("coach_request", __name__)
 
 @coach_request_bp.route("/<string:coach_id>/requests", methods=["GET"])
 def get_coach_requests(coach_id):
+    """
+    Get all client requests for a coach.
+    ---
+    tags:
+      - Coach
+    parameters:
+      - name: coach_id
+        in: path
+        required: true
+        type: string
+    responses:
+      200:
+        description: List of coach requests with client info
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -36,6 +52,44 @@ def get_coach_requests(coach_id):
 
 @coach_request_bp.route("/<string:coach_id>/requests/<int:request_id>", methods=["PUT"])
 def update_coach_request(coach_id, request_id):
+    """
+    Update the status of a coach request (accept, reject, or pending).
+    ---
+    tags:
+      - Coach
+    parameters:
+      - name: coach_id
+        in: path
+        required: true
+        type: string
+      - name: request_id
+        in: path
+        required: true
+        type: integer
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - status
+          properties:
+            status:
+              type: string
+              enum: [accepted, rejected, pending]
+            client_id:
+              type: string
+              description: Required when accepting to assign the coach
+    responses:
+      200:
+        description: Request status updated
+      400:
+        description: Invalid status or client already has a coach
+      404:
+        description: Request or client not found
+      500:
+        description: Server error
+    """
     data = request.get_json()
     status = data.get("status") if data else None
     client_id = data.get("client_id")

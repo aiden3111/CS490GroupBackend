@@ -5,6 +5,35 @@ coach_search_bp = Blueprint("coach_search", __name__)
 
 @coach_search_bp.route("/", methods=["GET"])
 def search_coaches():
+    """
+    Search and filter coaches by name, price, availability, or specialty.
+    ---
+    tags:
+      - Coach
+    parameters:
+      - name: search
+        in: query
+        type: string
+        description: Search by name, specialty, or availability
+      - name: sort
+        in: query
+        type: string
+        enum: [price_asc, price_desc]
+      - name: min_price
+        in: query
+        type: number
+      - name: max_price
+        in: query
+        type: number
+      - name: availability
+        in: query
+        type: string
+    responses:
+      200:
+        description: List of matching coaches
+      500:
+        description: Server error
+    """
     name_query = request.args.get("search")
     sort_order = request.args.get("sort")
     min_price = request.args.get("min_price")

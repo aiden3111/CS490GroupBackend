@@ -6,6 +6,40 @@ steps_graph_bp = Blueprint("steps_graph", __name__)
 
 @steps_graph_bp.route("/<string:client_id>", methods=["GET"])
 def get_steps(client_id):
+    """
+    Get steps data for a client with optional date range filtering.
+    ---
+    tags:
+      - Analytics
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+        description: Client ID
+      - name: range
+        in: query
+        type: string
+        enum: [day, week, month]
+        description: Date range filter
+    responses:
+      200:
+        description: List of steps entries
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              log_date:
+                type: string
+                format: date
+              steps:
+                type: integer
+      400:
+        description: Invalid range parameter
+      500:
+        description: Server error
+    """
 
     range_type = request.args.get("range") # added range filter to specify day, week, or month -- Aiden
     today = datetime.today()

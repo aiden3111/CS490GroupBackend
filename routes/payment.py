@@ -6,6 +6,55 @@ payment_bp = Blueprint("payment", __name__)
 # payment method -- Aiden
 @payment_bp.route("/add", methods=["POST"])
 def add_payment():
+    """
+    Add a new payment method for a client.
+    ---
+    tags:
+      - Payment
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - client_id
+            - last4
+          properties:
+            client_id:
+              type: string
+              description: Client ID
+            card_type:
+              type: string
+              example: Visa
+            last4:
+              type: string
+              example: "1234"
+              description: Last 4 digits of card
+            expiry_month:
+              type: integer
+              minimum: 1
+              maximum: 12
+            expiry_year:
+              type: integer
+            is_default:
+              type: boolean
+              default: false
+    responses:
+      201:
+        description: Payment method added successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            payment_id:
+              type: integer
+      400:
+        description: Missing required fields or invalid data
+      500:
+        description: Server error
+    """
     data = request.get_json()
 
     client_id = data.get("client_id")
@@ -57,6 +106,45 @@ def add_payment():
 # get payment methods -- aiden
 @payment_bp.route("/client/<string:client_id>", methods=["GET"])
 def get_payments(client_id):
+    """
+    Get all payment methods for a client.
+    ---
+    tags:
+      - Payment
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+        description: Client ID
+    responses:
+      200:
+        description: List of payment methods
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              payment_id:
+                type: integer
+              client_id:
+                type: string
+              card_type:
+                type: string
+              last4:
+                type: string
+              expiry_month:
+                type: integer
+              expiry_year:
+                type: integer
+              is_default:
+                type: boolean
+              created_at:
+                type: string
+                format: date-time
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -78,6 +166,44 @@ def get_payments(client_id):
 # update payment method (edit)
 @payment_bp.route("/update/<int:payment_id>", methods=["PUT"])
 def update_payment(payment_id):
+    """
+    Update an existing payment method.
+    ---
+    tags:
+      - Payment
+    parameters:
+      - name: payment_id
+        in: path
+        required: true
+        type: integer
+        description: Payment method ID
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            card_type:
+              type: string
+            last4:
+              type: string
+              description: Last 4 digits (must be 4 digits)
+            expiry_month:
+              type: integer
+              minimum: 1
+              maximum: 12
+            expiry_year:
+              type: integer
+    responses:
+      200:
+        description: Payment method updated successfully
+      400:
+        description: No fields to update or invalid data
+      404:
+        description: Payment method not found
+      500:
+        description: Server error
+    """
     data = request.get_json() or {}
     card_type = data.get("card_type")
     last4 = data.get("last4")
@@ -130,6 +256,38 @@ def update_payment(payment_id):
 # set default payment method
 @payment_bp.route("/default/<int:payment_id>", methods=["PUT"])
 def set_default_payment(payment_id):
+    """
+    Set a payment method as the default for a client.
+    ---
+    tags:
+      - Payment
+    parameters:
+      - name: payment_id
+        in: path
+        required: true
+        type: integer
+        description: Payment method ID
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - client_id
+          properties:
+            client_id:
+              type: string
+              description: Client ID (must own the payment method)
+    responses:
+      200:
+        description: Default payment method updated successfully
+      400:
+        description: client_id is required
+      404:
+        description: Payment method not found
+      500:
+        description: Server error
+    """
     data = request.get_json() or {}
     client_id = data.get("client_id")
     if not client_id:
@@ -166,6 +324,25 @@ def set_default_payment(payment_id):
 #delete payment method
 @payment_bp.route("/delete/<int:payment_id>", methods=["DELETE"])
 def delete_payment(payment_id):
+    """
+    Delete a payment method.
+    ---
+    tags:
+      - Payment
+    parameters:
+      - name: payment_id
+        in: path
+        required: true
+        type: integer
+        description: Payment method ID
+    responses:
+      200:
+        description: Payment method deleted successfully
+      404:
+        description: Payment method not found
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor()
 

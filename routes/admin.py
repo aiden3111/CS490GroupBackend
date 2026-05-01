@@ -6,6 +6,42 @@ admin_bp = Blueprint("admin", __name__)
 #allow an admin to view all accounts and be able to delete any account
 @admin_bp.route('/accounts', methods=['GET'])
 def get_all_accounts():
+    """
+    Get all client accounts with optional search filtering.
+    ---
+    tags:
+      - Admin
+    parameters:
+      - name: q
+        in: query
+        type: string
+        description: Search query for client ID, email, first name, or last name
+    responses:
+      200:
+        description: List of client accounts
+        schema:
+          type: object
+          properties:
+            clients:
+              type: array
+              items:
+                type: object
+                properties:
+                  client_id:
+                    type: string
+                  first_name:
+                    type: string
+                  last_name:
+                    type: string
+                  email:
+                    type: string
+                  role:
+                    type: string
+                  status:
+                    type: string
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
     try:
@@ -36,6 +72,25 @@ def get_all_accounts():
 
 @admin_bp.route('/accounts/<string:client_id>', methods=['DELETE'])
 def delete_account(client_id):
+    """
+    Delete a client account permanently.
+    ---
+    tags:
+      - Admin
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+        description: The client ID to delete
+    responses:
+      200:
+        description: Client deleted successfully
+      404:
+        description: Client not found
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor()
     try:
@@ -54,6 +109,57 @@ def delete_account(client_id):
 # This is used when the admin wants to see a list of all submitted reports.
 @admin_bp.route('/reports', methods=['GET'])
 def get_all_reports():
+    """
+    Get all user reports with optional status filtering.
+    ---
+    tags:
+      - Admin
+    parameters:
+      - name: status
+        in: query
+        type: string
+        enum: [pending, reviewed, resolved, dismissed]
+        description: Filter reports by status
+    responses:
+      200:
+        description: List of reports
+        schema:
+          type: object
+          properties:
+            reports:
+              type: array
+              items:
+                type: object
+                properties:
+                  report_id:
+                    type: integer
+                  reporter_id:
+                    type: string
+                  reporter_name:
+                    type: string
+                  reported_user_id:
+                    type: string
+                  reported_user_name:
+                    type: string
+                  reason:
+                    type: string
+                  details:
+                    type: string
+                  status:
+                    type: string
+                  created_at:
+                    type: string
+                    format: date-time
+                  reviewed_by:
+                    type: string
+                  reviewed_by_name:
+                    type: string
+                  resolved_at:
+                    type: string
+                    format: date-time
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -105,6 +211,61 @@ def get_all_reports():
 # This is used when the admin clicks on one specific report and wants to see the full details.
 @admin_bp.route('/reports/<int:report_id>', methods=['GET'])
 def get_single_report(report_id):
+    """
+    Get detailed information for a specific report.
+    ---
+    tags:
+      - Admin
+    parameters:
+      - name: report_id
+        in: path
+        required: true
+        type: integer
+        description: The report ID
+    responses:
+      200:
+        description: Report details
+        schema:
+          type: object
+          properties:
+            report:
+              type: object
+              properties:
+                report_id:
+                  type: integer
+                reporter_id:
+                  type: string
+                reporter_name:
+                  type: string
+                reporter_email:
+                  type: string
+                reported_user_id:
+                  type: string
+                reported_user_name:
+                  type: string
+                reported_user_email:
+                  type: string
+                reason:
+                  type: string
+                details:
+                  type: string
+                status:
+                  type: string
+                created_at:
+                  type: string
+                  format: date-time
+                reviewed_by:
+                  type: string
+                reviewed_by_name:
+                  type: string
+                resolved_at:
+                  type: string
+                  format: date-time
+      404:
+        description: Report not found
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -153,6 +314,54 @@ def get_single_report(report_id):
 # This is the route the admin uses to take action on a report.
 @admin_bp.route('/reports/<int:report_id>/review', methods=['PATCH'])
 def review_report(report_id):
+    """
+    Review and update the status of a report.
+    ---
+    tags:
+      - Admin
+    parameters:
+      - name: report_id
+        in: path
+        required: true
+        type: integer
+        description: The report ID
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - admin_id
+            - status
+          properties:
+            admin_id:
+              type: string
+              description: Admin ID performing the review
+            status:
+              type: string
+              enum: [reviewed, resolved, dismissed]
+              description: New status for the report
+    responses:
+      200:
+        description: Report updated successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            report_id:
+              type: integer
+            new_status:
+              type: string
+            reviewed_by:
+              type: string
+      400:
+        description: Invalid request data or status
+      404:
+        description: Report or admin not found
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -230,6 +439,39 @@ def review_report(report_id):
 
 @admin_bp.route('/disable_user', methods=['PATCH'])
 def disable_user():
+    """
+    Disable a client or suspend a coach account.
+    ---
+    tags:
+      - Admin
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - admin_id
+          properties:
+            admin_id:
+              type: string
+              description: Admin ID performing the action
+            client_id:
+              type: string
+              description: Client ID to disable (mutually exclusive with coach_id)
+            coach_id:
+              type: string
+              description: Coach ID to suspend (mutually exclusive with client_id)
+    responses:
+      200:
+        description: User disabled/suspended successfully
+      400:
+        description: Missing required fields or invalid combination
+      404:
+        description: Admin or user not found
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -291,6 +533,39 @@ def disable_user():
 
 @admin_bp.route('/reactivate_user', methods=['PATCH'])
 def reactivate_user():
+    """
+    Reactivate a disabled client or suspended coach account.
+    ---
+    tags:
+      - Admin
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - admin_id
+          properties:
+            admin_id:
+              type: string
+              description: Admin ID performing the action
+            client_id:
+              type: string
+              description: Client ID to reactivate (mutually exclusive with coach_id)
+            coach_id:
+              type: string
+              description: Coach ID to reactivate (mutually exclusive with client_id)
+    responses:
+      200:
+        description: User reactivated successfully
+      400:
+        description: Missing required fields or invalid combination
+      404:
+        description: Admin or user not found
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -353,6 +628,40 @@ def reactivate_user():
 # View only active accounts
 @admin_bp.route('/accounts/active', methods=['GET'])
 def get_active_accounts():
+    """
+    Get all active client accounts.
+    ---
+    tags:
+      - Admin
+    responses:
+      200:
+        description: List of active client accounts
+        schema:
+          type: object
+          properties:
+            clients:
+              type: array
+              items:
+                type: object
+                properties:
+                  client_id:
+                    type: string
+                  first_name:
+                    type: string
+                  last_name:
+                    type: string
+                  email:
+                    type: string
+                  role:
+                    type: string
+                  status:
+                    type: string
+                  signup_date:
+                    type: string
+                    format: date
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
     try:
@@ -374,6 +683,40 @@ def get_active_accounts():
 # View only disabled/suspended accounts
 @admin_bp.route('/accounts/disabled', methods=['GET'])
 def get_disabled_accounts():
+    """
+    Get all disabled client accounts.
+    ---
+    tags:
+      - Admin
+    responses:
+      200:
+        description: List of disabled client accounts
+        schema:
+          type: object
+          properties:
+            clients:
+              type: array
+              items:
+                type: object
+                properties:
+                  client_id:
+                    type: string
+                  first_name:
+                    type: string
+                  last_name:
+                    type: string
+                  email:
+                    type: string
+                  role:
+                    type: string
+                  status:
+                    type: string
+                  signup_date:
+                    type: string
+                    format: date
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
     try:
@@ -395,6 +738,46 @@ def get_disabled_accounts():
 # View new accounts — defaults to last 7 days, use ?days=30 for last 30 days
 @admin_bp.route('/accounts/new', methods=['GET'])
 def get_new_accounts():
+    """
+    Get recently created accounts within a specified number of days.
+    ---
+    tags:
+      - Admin
+    parameters:
+      - name: days
+        in: query
+        type: integer
+        default: 7
+        description: Number of days to look back
+    responses:
+      200:
+        description: List of new client accounts
+        schema:
+          type: object
+          properties:
+            clients:
+              type: array
+              items:
+                type: object
+                properties:
+                  client_id:
+                    type: string
+                  first_name:
+                    type: string
+                  last_name:
+                    type: string
+                  email:
+                    type: string
+                  role:
+                    type: string
+                  status:
+                    type: string
+                  signup_date:
+                    type: string
+                    format: date
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
     try:
@@ -417,6 +800,36 @@ def get_new_accounts():
 # User stats — totals, new signups by period
 @admin_bp.route('/stats', methods=['GET'])
 def get_user_stats():
+    """
+    Get user statistics including totals and recent signups.
+    ---
+    tags:
+      - Admin
+    responses:
+      200:
+        description: User statistics
+        schema:
+          type: object
+          properties:
+            total_users:
+              type: integer
+            active_users:
+              type: integer
+            deactivated_users:
+              type: integer
+            total_coaches:
+              type: integer
+            total_clients:
+              type: integer
+            new_today:
+              type: integer
+            new_this_week:
+              type: integer
+            new_this_month:
+              type: integer
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
     try:
@@ -451,6 +864,41 @@ def get_user_stats():
 # Active user reports by day/week/month based on logging activity
 @admin_bp.route('/active_users', methods=['GET'])
 def get_active_users():
+    """
+    Get active user statistics based on logging activity.
+    ---
+    tags:
+      - Admin
+    parameters:
+      - name: period
+        in: query
+        type: string
+        enum: [day, week, month]
+        default: week
+        description: Time period for activity analysis
+    responses:
+      200:
+        description: Active user statistics
+        schema:
+          type: object
+          properties:
+            period:
+              type: string
+            total_active_users:
+              type: integer
+            daily_breakdown:
+              type: array
+              items:
+                type: object
+                properties:
+                  active_users:
+                    type: integer
+                  date:
+                    type: string
+                    format: date
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
     try:
@@ -491,6 +939,29 @@ def get_active_users():
 
 @admin_bp.route('/check_status/<string:user_id>', methods=['GET'])
 def check_status(user_id):
+    """
+    Check the status of a user (coach or client).
+    ---
+    tags:
+      - Admin
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        type: string
+        description: The user ID to check
+    responses:
+      200:
+        description: User status
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: active
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 

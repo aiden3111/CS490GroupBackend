@@ -7,6 +7,53 @@ register_bp = Blueprint("register", __name__)
 
 @register_bp.route('/', methods=['POST'])
 def register():
+    """
+    Register a new client account.
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - email
+            - password
+            - first_name
+            - last_name
+            - dob
+          properties:
+            email:
+              type: string
+              example: user@example.com
+            password:
+              type: string
+            first_name:
+              type: string
+            last_name:
+              type: string
+            dob:
+              type: string
+              example: "1995-06-15"
+            gender:
+              type: string
+              example: Male
+            phone_number:
+              type: string
+            height:
+              type: number
+            weight:
+              type: number
+    responses:
+      200:
+        description: User registered successfully, returns generated client_id
+      400:
+        description: Required fields are missing
+      500:
+        description: Server error (e.g. duplicate email)
+    """
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')

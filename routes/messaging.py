@@ -7,6 +7,46 @@ messaging_bp = Blueprint("messaging", __name__)
 #returns all the messages between two users for chat history
 @messaging_bp.route("/<string:sender_id>/<string:receiver_id>", methods=["GET"])
 def get_messages(sender_id, receiver_id):
+    """
+    Get all messages between two users.
+    ---
+    tags:
+      - Messaging
+    parameters:
+      - name: sender_id
+        in: path
+        required: true
+        type: string
+        description: ID of one user
+      - name: receiver_id
+        in: path
+        required: true
+        type: string
+        description: ID of the other user
+    responses:
+      200:
+        description: List of messages
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              message_id:
+                type: integer
+              sender_id:
+                type: string
+              receiver_id:
+                type: string
+              content:
+                type: string
+              sent_at:
+                type: string
+                format: date-time
+              is_read:
+                type: boolean
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
     try:
@@ -25,6 +65,39 @@ def get_messages(sender_id, receiver_id):
 #Returns list of all conversations for a user, with the most recent message and timestamp for each conversation
 @messaging_bp.route("/conversations/<string:client_id>", methods=["GET"])
 def get_conversations(client_id):
+    """
+    Get all conversations for a user with the latest message.
+    ---
+    tags:
+      - Messaging
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+        description: The client ID
+    responses:
+      200:
+        description: List of conversations
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              other_user_id:
+                type: string
+              first_name:
+                type: string
+              last_name:
+                type: string
+              last_message:
+                type: string
+              last_sent:
+                type: string
+                format: date-time
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
     try:

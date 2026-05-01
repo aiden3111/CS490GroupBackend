@@ -6,6 +6,43 @@ mood_bp = Blueprint("mood", __name__)
 
 @mood_bp.route("/<string:client_id>", methods=["GET"])
 def get_my_mood(client_id):
+    """
+    Get all mood logs for a client.
+    ---
+    tags:
+      - Mood
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        type: string
+        description: Client ID
+    responses:
+      200:
+        description: List of mood logs
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              mood_log_id:
+                type: integer
+              log_date:
+                type: string
+                format: date
+              mood_score:
+                type: integer
+                minimum: 1
+                maximum: 5
+              mood_label:
+                type: string
+              notes:
+                type: string
+      404:
+        description: No mood logs found
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -38,6 +75,25 @@ def get_my_mood(client_id):
 
 @mood_bp.route("/<int:log_id>", methods=["DELETE"]) # Add deleting mood logs -- Aiden
 def delete_mood_log(log_id):
+    """
+    Delete a mood log entry.
+    ---
+    tags:
+      - Mood
+    parameters:
+      - name: log_id
+        in: path
+        required: true
+        type: integer
+        description: Mood log ID
+    responses:
+      200:
+        description: Mood log deleted successfully
+      404:
+        description: Log not found
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -66,6 +122,58 @@ def delete_mood_log(log_id):
 
 @mood_bp.route("/", methods=["POST"])
 def create_mood_log():
+    """
+    Create a new mood log entry.
+    ---
+    tags:
+      - Mood
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - client_id
+            - mood_score
+          properties:
+            client_id:
+              type: string
+              description: Client ID
+            log_date:
+              type: string
+              format: date
+              description: Date of the mood entry (defaults to today)
+            mood_score:
+              type: integer
+              minimum: 1
+              maximum: 5
+              description: Mood score from 1-5
+            mood_label:
+              type: string
+              description: Optional mood label
+            notes:
+              type: string
+              description: Optional notes
+    responses:
+      201:
+        description: Mood entry created successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            mood_log_id:
+              type: integer
+      400:
+        description: Missing required fields or invalid data
+      404:
+        description: Client not found
+      409:
+        description: Mood entry already exists for this date
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 
@@ -125,6 +233,41 @@ def create_mood_log():
 #update the mood entry
 @mood_bp.route("/<int:log_id>", methods=["PUT"])
 def update_mood_log(log_id):
+    """
+    Update an existing mood log entry.
+    ---
+    tags:
+      - Mood
+    parameters:
+      - name: log_id
+        in: path
+        required: true
+        type: integer
+        description: Mood log ID
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            mood_score:
+              type: integer
+              minimum: 1
+              maximum: 5
+            mood_label:
+              type: string
+            notes:
+              type: string
+    responses:
+      200:
+        description: Mood log updated successfully
+      400:
+        description: Nothing to update or invalid data
+      404:
+        description: Log not found
+      500:
+        description: Server error
+    """
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
 

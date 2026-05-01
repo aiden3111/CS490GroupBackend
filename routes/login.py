@@ -6,6 +6,35 @@ login_bp = Blueprint("login", __name__)
 
 @login_bp.route('/', methods=['POST'])
 def login():
+    """
+    Authenticate a user with email and password.
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - clientEmail
+            - password
+          properties:
+            clientEmail:
+              type: string
+              example: user@example.com
+            password:
+              type: string
+              example: mypassword
+    responses:
+      200:
+        description: Login successful, returns user data with role and specialty
+      400:
+        description: Email and password are required
+      401:
+        description: Invalid email or password
+    """
     data = request.get_json()
     clientEmail = data.get('clientEmail')
     password = data.get('password')

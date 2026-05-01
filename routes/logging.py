@@ -7,6 +7,43 @@ logging_bp = Blueprint("logging", __name__)
 # use case  8.2 Log cardio activity -- Aiden
 @logging_bp.route("/", methods=["POST"])
 def log_cardio():
+    """
+    Log cardio activity (steps and calories) for a client.
+    ---
+    tags:
+      - Logging
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - client_id
+          properties:
+            client_id:
+              type: string
+              description: Client ID
+            steps:
+              type: integer
+              description: Number of steps taken
+            calories:
+              type: number
+              description: Calories burned
+            log_date:
+              type: string
+              format: date
+              description: Date of the activity (defaults to today)
+    responses:
+      201:
+        description: Cardio activity logged successfully
+      400:
+        description: client_id is required
+      404:
+        description: Client not found
+      500:
+        description: Server error
+    """
     data = request.get_json()
 
     client_id = data.get("client_id")
