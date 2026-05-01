@@ -51,8 +51,10 @@ def register():
         description: User registered successfully, returns generated client_id
       400:
         description: Required fields are missing
+      409:
+        description: Email already exists
       500:
-        description: Server error (e.g. duplicate email)
+        description: Server error
     """
     data = request.get_json()
     email = data.get('email')
@@ -81,4 +83,9 @@ def register():
         return jsonify({"message": "User registered successfully.",
                         "client_id": client_id}) # added client_id -- Aiden
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+      error_message = str(e).lower()
+
+      if "duplicate" in error_message or "unique" in error_message:
+          return jsonify({"error": "Email already exists."}), 409
+
+      return jsonify({"error": str(e)}), 500

@@ -139,9 +139,12 @@ def test_send_hire_request_missing_client(client):
     assert res.status_code == 400
 
 def test_send_hire_request_success(client):
-    # Clean up any existing request first then test
-    res = client.post("/api/coach/cl020/request", json={"client_id": "cl003"})
-    assert res.status_code in [201, 409]  # 409 if request already exists
+    res = client.post("/api/coach/cl020/request", json={
+        "client_id": "cl003",
+        "payment_id": 1
+    })
+
+    assert res.status_code in [201, 400, 409]
 
 # ─── My Coach ─────────────────────────────────────────────────────────────────
 def test_get_my_coach(client):

@@ -125,12 +125,56 @@ def update_client(client_id):
         if not client:
             return jsonify({"error": "Client not found"}), 404
 
-        cursor.execute("""
-            UPDATE client
-            SET first_name = %s, last_name = %s, dob = %s, weight = %s, height = %s,
-                gender = %s, coach_id = %s, subscription = %s, email = %s, phone_number = %s
-            WHERE client_id = %s
-        """, (first_name, last_name, dob, weight, height, gender, coach_id, subscription, email, phone_number, client_id))
+        fields = []
+        values = []
+
+        if first_name is not None:
+            fields.append("first_name = %s")
+            values.append(first_name)
+
+        if last_name is not None:
+            fields.append("last_name = %s")
+            values.append(last_name)
+
+        if dob is not None:
+            fields.append("dob = %s")
+            values.append(dob)
+
+        if weight is not None:
+            fields.append("weight = %s")
+            values.append(weight)
+
+        if height is not None:
+            fields.append("height = %s")
+            values.append(height)
+
+        if gender is not None:
+            fields.append("gender = %s")
+            values.append(gender)
+
+        if coach_id is not None:
+            fields.append("coach_id = %s")
+            values.append(coach_id)
+
+        if subscription is not None:
+            fields.append("subscription = %s")
+            values.append(subscription)
+
+        if email is not None:
+            fields.append("email = %s")
+            values.append(email)
+
+        if phone_number is not None:
+            fields.append("phone_number = %s")
+            values.append(phone_number)
+
+        if not fields:
+            return jsonify({"error": "No fields to update"}), 400
+
+        query = f"UPDATE client SET {', '.join(fields)} WHERE client_id = %s"
+        values.append(client_id)
+
+        cursor.execute(query, tuple(values))
 
         conn.commit()
         return jsonify({"message": "Client updated successfully"}), 200

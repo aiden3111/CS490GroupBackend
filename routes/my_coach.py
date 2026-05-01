@@ -40,8 +40,8 @@ def get_my_coach(client_id):
             specialty:
               type: string
               enum: [Fitness & Nutrition, Fitness, Nutrition, none]
-      202:
-        description: No coach assigned (returns null)
+      404:
+        description: No coach assigned
       500:
         description: Server error
     """
@@ -75,7 +75,7 @@ def get_my_coach(client_id):
         assigned_coach = cursor.fetchone()
 
         if not assigned_coach:
-            return jsonify(None), 202
+          return jsonify({"message": "No coach assigned"}), 404
 
         return jsonify(assigned_coach), 200
 

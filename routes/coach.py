@@ -193,17 +193,18 @@ def view_client_progress(client_id):
 
     # calories
     cursor.execute("""
-    SELECT
-        CAST(log_date AS CHAR) as log_date,
-        actual_calories,
-        protein,
-        carbs,
-        fats,
-        notes
-    FROM meal_log
-    WHERE client_id = %s
-    ORDER BY log_date ASC
-    """, (client_id,))
+      SELECT
+          CAST(ml.log_date AS CHAR) AS log_date,
+          ml.actual_calories,
+          m.protein,
+          m.carbs,
+          m.fats,
+          ml.notes
+      FROM meal_log ml
+      JOIN meals m ON ml.meal_id = m.meal_id
+      WHERE ml.client_id = %s
+      ORDER BY ml.log_date ASC
+      """, (client_id,))
     calories = cursor.fetchall()
     # I alsso need workout - prof requirements
     cursor.execute("""

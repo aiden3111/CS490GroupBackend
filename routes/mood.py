@@ -18,28 +18,26 @@ def get_my_mood(client_id):
         type: string
         description: Client ID
     responses:
-      200:
-        description: List of mood logs
-        schema:
-          type: array
-          items:
-            type: object
-            properties:
-              mood_log_id:
-                type: integer
-              log_date:
-                type: string
-                format: date
-              mood_score:
-                type: integer
-                minimum: 1
-                maximum: 5
-              mood_label:
-                type: string
-              notes:
-                type: string
-      404:
-        description: No mood logs found
+        200:
+          description: List of mood logs. Returns an empty list if no mood logs exist.
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                mood_log_id:
+                  type: integer
+                log_date:
+                  type: string
+                  format: date
+                mood_score:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                mood_label:
+                  type: string
+                notes:
+                  type: string
       500:
         description: Server error
     """
@@ -61,8 +59,8 @@ def get_my_mood(client_id):
         moodlog = cursor.fetchall()
 
         if not moodlog:
-            return jsonify([]), 404
-
+          return jsonify([]), 200
+        
         return jsonify(moodlog), 200
 
     except Exception as e:
