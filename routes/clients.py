@@ -217,6 +217,7 @@ def delete_client(client_id):
         cursor.execute("DELETE FROM coach_applications WHERE client_id = %s", (client_id,))
         cursor.execute("DELETE FROM coach_request WHERE client_id = %s OR coach_id = %s", (client_id, client_id))
         cursor.execute("DELETE FROM coach WHERE coach_id = %s", (client_id,))
+        cursor.execute("DELETE FROM payment_method WHERE client_id = %s", (client_id,))
         cursor.execute("DELETE FROM client WHERE client_id = %s", (client_id,))
         conn.commit()
 
