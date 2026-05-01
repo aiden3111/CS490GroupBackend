@@ -212,7 +212,11 @@ def delete_client(client_id):
     cursor = conn.cursor()
 
     try:
-        cursor.execute("DELETE FROM coach_request WHERE client_id = %s", (client_id,))
+        cursor.execute("DELETE FROM fitness_coach WHERE coach_id = %s", (client_id,))
+        cursor.execute("DELETE FROM nutrition_coach WHERE coach_id = %s", (client_id,))
+        cursor.execute("DELETE FROM coach_applications WHERE client_id = %s", (client_id,))
+        cursor.execute("DELETE FROM coach_request WHERE client_id = %s OR coach_id = %s", (client_id, client_id))
+        cursor.execute("DELETE FROM coach WHERE coach_id = %s", (client_id,))
         cursor.execute("DELETE FROM client WHERE client_id = %s", (client_id,))
         conn.commit()
 
@@ -222,8 +226,9 @@ def delete_client(client_id):
         return jsonify({"message": "Client account deleted"}), 200
 
     except Exception as e:
-        conn.rollback()
-        return jsonify({"error": str(e)}), 500
+      print("Delete client error:", e)
+      conn.rollback()
+      return jsonify({"error": str(e)}), 500
 
     finally:
         cursor.close()
