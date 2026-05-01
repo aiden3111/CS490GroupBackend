@@ -4,6 +4,7 @@ from datetime import datetime
 
 coach_applications_bp = Blueprint("coach_applications", __name__)
 
+
 @coach_applications_bp.route("/", methods=["GET"])
 def list_coach_applications():
     """
@@ -46,6 +47,8 @@ def list_coach_applications():
                     type: string
                   pricing:
                     type: number
+                  availability:
+                    type: string
                   status:
                     type: string
                   submitted_at:
@@ -60,8 +63,10 @@ def list_coach_applications():
         description: Server error
     """
     status = (request.args.get("status") or "").strip().lower()
+
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
+
     try:
         q = """
             SELECT
@@ -74,6 +79,7 @@ def list_coach_applications():
                 ca.certifications,
                 ca.bio,
                 ca.pricing,
+                ca.availability,
                 ca.status,
                 ca.submitted_at,
                 ca.reviewed_by,
@@ -81,18 +87,25 @@ def list_coach_applications():
             FROM coach_applications ca
             JOIN client cl ON ca.client_id = cl.client_id
         """
+
         params = []
+
         if status:
             q += " WHERE ca.status = %s"
             params.append(status)
+
         q += " ORDER BY ca.submitted_at DESC, ca.application_id DESC"
+
         cursor.execute(q, tuple(params))
         return jsonify({"applications": cursor.fetchall()}), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
     finally:
         cursor.close()
         conn.close()
+
 
 @coach_applications_bp.route("/apply", methods=["POST"])
 def apply_to_become_coach():
@@ -126,6 +139,10 @@ def apply_to_become_coach():
             pricing:
               type: number
               description: Coaching pricing
+            availability:
+              type: string
+              description: Coach availability
+              example: "Mondays and Wednesdays 6 PM - 9 PM"
     responses:
       201:
         description: Application submitted successfully
@@ -148,6 +165,7 @@ def apply_to_become_coach():
     specialty = data.get("specialty")
     certifications = data.get("certifications")
     pricing = data.get("pricing")
+    availability = data.get("availability")
 
     if not client_id:
         return jsonify({"error": "client_id is required"}), 400
@@ -186,13 +204,14 @@ def apply_to_become_coach():
                 specialty,
                 certifications,
                 pricing,
+                availability,
                 status,
                 submitted_at,
                 reviewed_by,
                 reviewed_at
             )
-            VALUES (%s, %s, %s, %s, %s, 'pending', NOW(), NULL, NULL)
-        """, (client_id, bio, specialty, certifications, pricing))
+            VALUES (%s, %s, %s, %s, %s, %s, 'pending', NOW(), NULL, NULL)
+        """, (client_id, bio, specialty, certifications, pricing, availability))
 
         conn.commit()
         return jsonify({"message": "Coach application submitted successfully"}), 201
@@ -266,7 +285,11 @@ def review_coach_application():
 
     try:
         cursor.execute(
-            "SELECT client_id FROM coach_applications WHERE application_id = %s",
+            """
+            SELECT client_id, specialty, certifications, pricing, availability
+            FROM coach_applications
+            WHERE application_id = %s
+            """,
             (application_id,)
         )
         app = cursor.fetchone()
@@ -275,6 +298,10 @@ def review_coach_application():
             return jsonify({"error": "Application not found"}), 404
 
         client_id = app[0]
+        specialty = app[1]
+        certifications = app[2]
+        pricing = app[3]
+        availability = app[4]
 
         new_status = "approved" if action == "approve" else "declined"
 
@@ -301,41 +328,56 @@ def review_coach_application():
 
             if not existing_coach:
                 cursor.execute(
-                    "INSERT INTO coach (coach_id, status) VALUES (%s, %s)",
-                    (client_id, "active")
+                    """
+                    INSERT INTO coach (
+                        coach_id,
+                        status,
+                        pricing,
+                        availability,
+                        specialty
+                    )
+                    VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    (client_id, "active", pricing, availability, specialty)
                 )
             else:
                 cursor.execute(
-                    "UPDATE coach SET status = %s WHERE coach_id = %s",
-                    ("active", client_id)
+                    """
+                    UPDATE coach
+                    SET status = %s,
+                        pricing = %s,
+                        availability = %s,
+                        specialty = %s
+                    WHERE coach_id = %s
+                    """,
+                    ("active", pricing, availability, specialty, client_id)
                 )
-
-            # get specialty and certifications from application
-            cursor.execute(
-                "SELECT specialty, certifications FROM coach_applications WHERE application_id = %s",
-                (application_id,)
-            )
-            app_details = cursor.fetchone()
-            specialty = app_details[0]
-            certifications = app_details[1]
 
             if specialty in ("fitness", "both"):
                 cursor.execute(
-                    "SELECT coach_id FROM fitness_coach WHERE coach_id = %s", (client_id,)
+                    "SELECT coach_id FROM fitness_coach WHERE coach_id = %s",
+                    (client_id,)
                 )
                 if not cursor.fetchone():
                     cursor.execute(
-                        "INSERT INTO fitness_coach (coach_id, certifications) VALUES (%s, %s)",
+                        """
+                        INSERT INTO fitness_coach (coach_id, certifications)
+                        VALUES (%s, %s)
+                        """,
                         (client_id, certifications)
                     )
 
             if specialty in ("nutrition", "both"):
                 cursor.execute(
-                    "SELECT coach_id FROM nutrition_coach WHERE coach_id = %s", (client_id,)
+                    "SELECT coach_id FROM nutrition_coach WHERE coach_id = %s",
+                    (client_id,)
                 )
                 if not cursor.fetchone():
                     cursor.execute(
-                        "INSERT INTO nutrition_coach (coach_id, certifications) VALUES (%s, %s)",
+                        """
+                        INSERT INTO nutrition_coach (coach_id, certifications)
+                        VALUES (%s, %s)
+                        """,
                         (client_id, certifications)
                     )
 
