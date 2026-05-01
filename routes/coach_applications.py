@@ -301,8 +301,13 @@ def review_coach_application():
 
             if not existing_coach:
                 cursor.execute(
-                    "INSERT INTO coach (coach_id) VALUES (%s)",
-                    (client_id,)
+                    "INSERT INTO coach (coach_id, status) VALUES (%s, %s)",
+                    (client_id, "active")
+                )
+            else:
+                cursor.execute(
+                    "UPDATE coach SET status = %s WHERE coach_id = %s",
+                    ("active", client_id)
                 )
 
             # get specialty and certifications from application
