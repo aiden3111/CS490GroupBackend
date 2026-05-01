@@ -1,11 +1,17 @@
-import mysql.connector
 import os
+import mysql.connector
+from dotenv import load_dotenv
+
+if os.getenv("TESTING"):
+    pass  # use env vars directly from GitHub Actions
+else:
+    load_dotenv()
 
 def get_conn():
     return mysql.connector.connect(
-        host=os.getenv("DB_HOST"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        database=os.getenv("DB_NAME"),
+        host=os.getenv("DB_HOST", "localhost"),
+        user=os.getenv("DB_USER", "root"),
+        password=os.getenv("DB_PASSWORD", ""),
+        database=os.getenv("DB_NAME", "fitappdb"),
         port=int(os.getenv("DB_PORT", 3306))
     )

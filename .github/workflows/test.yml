@@ -1,0 +1,55 @@
+name: Flask Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: testpassword
+          MYSQL_DATABASE: fitappdb
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Wait for MySQL
+        run: sleep 10
+
+      - name: Load database schema
+        run: |
+          mysql -h 127.0.0.1 -u root -ptestpassword fitappdb < databaseStuff/dump-fitappdb-202605011406.sql
+
+      - name: Run tests
+        env:
+          TESTING: true
+          DB_HOST: 127.0.0.1
+          DB_USER: root
+          DB_PASSWORD: testpassword
+          DB_NAME: fitappdb
+          DB_PORT: 3306
+        run: pytest tests/ -v

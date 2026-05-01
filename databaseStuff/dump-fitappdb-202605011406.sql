@@ -21,7 +21,7 @@ SET @@SESSION.SQL_LOG_BIN= 0;
 -- GTID state at the beginning of the backup 
 --
 
-SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ '9e8fccdc-31f4-11f1-822d-aa92dda088c9:1-120';
+SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ '9e8fccdc-31f4-11f1-822d-aa92dda088c9:1-208';
 
 --
 -- Table structure for table `admin`
@@ -74,6 +74,7 @@ CREATE TABLE `client` (
   `phone_number` varchar(20) DEFAULT NULL,
   `signup_date` date DEFAULT (curdate()),
   `password` varchar(255) NOT NULL,
+  `status` varchar(20) DEFAULT 'active',
   PRIMARY KEY (`client_id`),
   UNIQUE KEY `uq_client_email` (`email`),
   KEY `idx_client_coach_id` (`coach_id`),
@@ -87,7 +88,7 @@ CREATE TABLE `client` (
 
 LOCK TABLES `client` WRITE;
 /*!40000 ALTER TABLE `client` DISABLE KEYS */;
-INSERT INTO `client` VALUES ('cl001','Frank','Torres','2001-05-12',175.50,70.00,'Male','cl017','premium','client','frank.torres@fitapp.com','9735551001','2026-03-01','pass123'),('cl002','Sarah','Johnson','1998-11-03',135.20,65.00,'Female','cl018','basic','client','sarah.johnson@fitapp.com','9735551002','2026-03-01','pass123'),('cl003','Michael','Chen','1995-07-22',182.00,72.50,'Male','cl019','premium','client','michael.chen@fitapp.com','9735551003','2026-03-02','pass123'),('cl004','Emily','Garcia','2000-09-14',125.75,64.00,'Female','cl020','basic','client','emily.garcia@fitapp.com','9735551004','2026-03-02','pass123'),('cl005','David','Smith','1997-03-30',190.10,73.00,'Male','cl017','premium','client','david.smith@fitapp.com','9735551005','2026-03-03','pass123'),('cl006','Olivia','Brown','2002-01-18',118.40,63.00,'Female','cl018','basic','client','olivia.brown@fitapp.com','9735551006','2026-03-03','pass123'),('cl007','James','Anderson','1996-04-28',185.30,71.50,'Male','cl019','premium','client','james.anderson@fitapp.com','9735551007','2026-03-04','pass123'),('cl008','Ava','Wilson','1999-12-05',130.60,66.00,'Female','cl020','basic','client','ava.wilson@fitapp.com','9735551008','2026-03-04','pass123'),('cl009','Noah','Taylor','1994-08-17',172.80,69.00,'Male','cl017','premium','client','noah.taylor@fitapp.com','9735551009','2026-03-05','pass123'),('cl010','Sophia','Moore','2001-02-09',122.30,64.50,'Female','cl018','basic','client','sophia.moore@fitapp.com','9735551010','2026-03-05','pass123'),('cl011','Liam','Jackson','1993-10-11',198.20,74.00,'Male','cl019','premium','client','liam.jackson@fitapp.com','9735551011','2026-03-06','pass123'),('cl012','Mia','White','2000-06-21',127.40,65.20,'Female','cl020','premium','client','mia.white@fitapp.com','9735551012','2026-03-06','pass123'),('cl013','Ethan','Harris','1998-01-07',188.90,72.00,'Male','cl017','basic','client','ethan.harris@fitapp.com','9735551013','2026-03-07','pass123'),('cl014','Charlotte','Martin','2002-07-19',119.50,63.70,'Female','cl018','premium','client','charlotte.martin@fitapp.com','9735551014','2026-03-07','pass123'),('cl015','Lucas','Thompson','1997-09-25',181.00,71.20,'Male','cl019','basic','client','lucas.thompson@fitapp.com','9735551015','2026-03-08','pass123'),('cl016','Amelia','Davis','1999-03-13',124.80,64.10,'Female','cl020','premium','client','amelia.davis@fitapp.com','9735551016','2026-03-08','pass123'),('cl017','Daniel','Martinez','1994-06-11',205.00,74.00,'Male',NULL,'premium','coach','daniel.martinez@fitapp.com','9735551017','2026-03-09','pass123'),('cl018','Mia','Thomas','1999-08-19',120.00,64.50,'Female',NULL,'premium','coach','mia.thomas@fitapp.com','9735551018','2026-03-09','pass123'),('cl019','Chris','Walker','1992-12-02',210.40,75.00,'Male',NULL,'premium','coach','chris.walker@fitapp.com','9735551019','2026-03-10','pass123'),('cl020','Grace','Lee','1996-05-27',126.10,65.80,'Female',NULL,'premium','coach','grace.lee@fitapp.com','9735551020','2026-03-10','pass123');
+INSERT INTO `client` VALUES ('cl001','Frank','Torres','2001-05-12',175.50,70.00,'Male','cl017','premium','client','frank.torres@fitapp.com','9735551001','2026-03-01','pass123','active'),('cl002','Sarah','Johnson','1998-11-03',135.20,65.00,'Female','cl018','basic','client','sarah.johnson@fitapp.com','9735551002','2026-03-01','pass123','active'),('cl003','Michael','Chen','1995-07-22',182.00,72.50,'Male','cl019','premium','client','michael.chen@fitapp.com','9735551003','2026-03-02','pass123','active'),('cl004','Emily','Garcia','2000-09-14',125.75,64.00,'Female','cl020','basic','client','emily.garcia@fitapp.com','9735551004','2026-03-02','pass123','active'),('cl005','David','Smith','1997-03-30',190.10,73.00,'Male','cl017','premium','client','david.smith@fitapp.com','9735551005','2026-03-03','pass123','active'),('cl006','Olivia','Brown','2002-01-18',118.40,63.00,'Female','cl018','basic','client','olivia.brown@fitapp.com','9735551006','2026-03-03','pass123','active'),('cl007','James','Anderson','1996-04-28',185.30,71.50,'Male','cl019','premium','client','james.anderson@fitapp.com','9735551007','2026-03-04','pass123','active'),('cl008','Ava','Wilson','1999-12-05',130.60,66.00,'Female','cl020','basic','client','ava.wilson@fitapp.com','9735551008','2026-03-04','pass123','active'),('cl009','Noah','Taylor','1994-08-17',172.80,69.00,'Male','cl017','premium','client','noah.taylor@fitapp.com','9735551009','2026-03-05','pass123','active'),('cl010','Sophia','Moore','2001-02-09',122.30,64.50,'Female','cl018','basic','client','sophia.moore@fitapp.com','9735551010','2026-03-05','pass123','active'),('cl011','Liam','Jackson','1993-10-11',198.20,74.00,'Male','cl019','premium','client','liam.jackson@fitapp.com','9735551011','2026-03-06','pass123','active'),('cl012','Mia','White','2000-06-21',127.40,65.20,'Female','cl020','premium','client','mia.white@fitapp.com','9735551012','2026-03-06','pass123','active'),('cl013','Ethan','Harris','1998-01-07',188.90,72.00,'Male','cl017','basic','client','ethan.harris@fitapp.com','9735551013','2026-03-07','pass123','active'),('cl014','Charlotte','Martin','2002-07-19',119.50,63.70,'Female','cl018','premium','client','charlotte.martin@fitapp.com','9735551014','2026-03-07','pass123','active'),('cl015','Lucas','Thompson','1997-09-25',181.00,71.20,'Male','cl019','basic','client','lucas.thompson@fitapp.com','9735551015','2026-03-08','pass123','active'),('cl016','Amelia','Davis','1999-03-13',124.80,64.10,'Female',NULL,'premium','client','amelia.davis@fitapp.com','9735551016','2026-03-08','pass123','active'),('cl017','Daniel','Martinez','1994-06-11',205.00,74.00,'Male',NULL,'premium','coach','daniel.martinez@fitapp.com','9735551017','2026-03-09','pass123','active'),('cl018','Mia','Thomas','1999-08-19',120.00,64.50,'Female',NULL,'premium','coach','mia.thomas@fitapp.com','9735551018','2026-03-09','pass123','active'),('cl019','Chris','Walker','1992-12-02',210.40,75.00,'Male',NULL,'premium','coach','chris.walker@fitapp.com','9735551019','2026-03-10','pass123','active'),('cl020','Grace','Lee','1996-05-27',126.10,65.80,'Female',NULL,'premium','coach','grace.lee@fitapp.com','9735551020','2026-03-10','pass123','active');
 /*!40000 ALTER TABLE `client` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -140,7 +141,7 @@ CREATE TABLE `coach_applications` (
   KEY `idx_coach_app_client_id` (`client_id`),
   KEY `idx_coach_app_reviewed_by` (`reviewed_by`),
   CONSTRAINT `fk_coach_applications_admin` FOREIGN KEY (`reviewed_by`) REFERENCES `admin` (`admin_id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -149,7 +150,7 @@ CREATE TABLE `coach_applications` (
 
 LOCK TABLES `coach_applications` WRITE;
 /*!40000 ALTER TABLE `coach_applications` DISABLE KEYS */;
-INSERT INTO `coach_applications` VALUES (1,'cl009','fitness','ACE Personal Trainer','Interested in beginner strength coaching.',79.99,'pending','2026-03-08 14:00:00',NULL,NULL),(2,'cl011','both','NASM CPT, Nutrition Cert','Experienced in body recomposition.',95.00,'approved','2026-03-07 14:30:00',1,'2026-03-09 16:00:00'),(3,'cl014','nutrition','Sports Nutrition Course','Focused on sustainable meal planning.',70.00,'declined','2026-03-06 19:15:00',2,'2026-03-08 20:45:00');
+INSERT INTO `coach_applications` VALUES (1,'cl009','fitness','ACE Personal Trainer','Interested in beginner strength coaching.',79.99,'pending','2026-03-08 14:00:00',NULL,NULL),(2,'cl011','both','NASM CPT, Nutrition Cert','Experienced in body recomposition.',95.00,'approved','2026-03-07 14:30:00',1,'2026-03-09 16:00:00'),(3,'cl014','nutrition','Sports Nutrition Course','Focused on sustainable meal planning.',70.00,'declined','2026-03-06 19:15:00',2,'2026-03-08 20:45:00'),(4,'72e8e430','nutrition','asdgfsag','dslkfjogjqwroeijg',100.00,'pending','2026-04-09 20:31:56',NULL,NULL),(5,'09f8b76e','nutrition','34rg4','tg34tg3',100.00,'pending','2026-04-09 21:07:04',NULL,NULL),(6,'40f3324c','nutrition','sfdg','dfg',80.00,'pending','2026-04-16 22:43:46',NULL,NULL);
 /*!40000 ALTER TABLE `coach_applications` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -170,7 +171,7 @@ CREATE TABLE `coach_request` (
   KEY `coach_request_client_FK` (`client_id`),
   CONSTRAINT `coach_request_client_FK` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `coach_request_coach_FK` FOREIGN KEY (`coach_id`) REFERENCES `coach` (`coach_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -179,7 +180,7 @@ CREATE TABLE `coach_request` (
 
 LOCK TABLES `coach_request` WRITE;
 /*!40000 ALTER TABLE `coach_request` DISABLE KEYS */;
-INSERT INTO `coach_request` VALUES (1,'cl002','cl017','pending'),(2,'cl004','cl019','pending'),(3,'cl006','cl017','accepted'),(4,'cl008','cl019','accepted'),(5,'cl010','cl020','rejected'),(6,'cl012','cl017','pending'),(7,'cl013','cl018','accepted'),(8,'cl015','cl020','rejected'),(9,'cl016','cl019','pending'),(10,'cl001','cl020','accepted');
+INSERT INTO `coach_request` VALUES (1,'cl002','cl017','pending'),(2,'cl004','cl019','pending'),(3,'cl006','cl017','accepted'),(4,'cl008','cl019','accepted'),(5,'cl010','cl020','rejected'),(6,'cl012','cl017','pending'),(7,'cl013','cl018','accepted'),(8,'cl015','cl020','rejected'),(9,'cl016','cl019','pending'),(10,'cl001','cl020','accepted'),(13,'cl001','cl018','accepted'),(14,'cl001','cl017','accepted');
 /*!40000 ALTER TABLE `coach_request` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -202,7 +203,7 @@ CREATE TABLE `exercises` (
   PRIMARY KEY (`exercise_id`),
   KEY `idx_exercises_created_by` (`created_by`),
   CONSTRAINT `fk_exercises_created_by` FOREIGN KEY (`created_by`) REFERENCES `client` (`client_id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -211,7 +212,7 @@ CREATE TABLE `exercises` (
 
 LOCK TABLES `exercises` WRITE;
 /*!40000 ALTER TABLE `exercises` DISABLE KEYS */;
-INSERT INTO `exercises` VALUES (1,'Barbell Bench Press','Barbell','Chest','Strength','https://example.com/bench',0,NULL),(2,'Dumbbell Shoulder Press','Dumbbell','Shoulders','Strength','https://example.com/press',0,NULL),(3,'Lat Pulldown','Machine','Back','Strength','https://example.com/pulldown',0,NULL),(4,'Goblet Squat','Dumbbell','Legs','Strength','https://example.com/squat',0,NULL),(5,'Romanian Deadlift','Barbell','Hamstrings','Strength','https://example.com/rdl',0,NULL),(6,'Plank','Bodyweight','Core','Core','https://example.com/plank',0,NULL),(7,'Incline Walk','Treadmill','Cardio','Cardio','https://example.com/walk',0,NULL),(8,'Cable Tricep Pushdown','Cable','Arms','Strength','https://example.com/tricep',0,NULL),(9,'Glute Bridge','Bodyweight','Glutes','Strength','https://example.com/glute',1,'cl017'),(10,'Conditioning Circuit','None','Full Body','Conditioning','https://example.com/circuit',1,'cl018'),(11,'Seated Row','Machine','Back','Strength','https://example.com/row',0,NULL),(12,'Walking Lunges','Dumbbell','Legs','Strength','https://example.com/lunges',0,NULL);
+INSERT INTO `exercises` VALUES (1,'Barbell Bench Press','Barbell','Chest','Strength','https://example.com/bench',0,NULL),(2,'Dumbbell Shoulder Press','Dumbbell','Shoulders','Strength','https://example.com/press',0,NULL),(3,'Lat Pulldown','Machine','Back','Strength','https://example.com/pulldown',0,NULL),(4,'Goblet Squat','Dumbbell','Legs','Strength','https://example.com/squat',0,NULL),(5,'Romanian Deadlift','Barbell','Hamstrings','Strength','https://example.com/rdl',0,NULL),(6,'Plank','Bodyweight','Core','Core','https://example.com/plank',0,NULL),(7,'Incline Walk','Treadmill','Cardio','Cardio','https://example.com/walk',0,NULL),(8,'Cable Tricep Pushdown','Cable','Arms','Strength','https://example.com/tricep',0,NULL),(9,'Glute Bridge','Bodyweight','Glutes','Strength','https://example.com/glute',1,'cl017'),(10,'Conditioning Circuit','None','Full Body','Conditioning','https://example.com/circuit',1,'cl018'),(11,'Seated Row','Machine','Back','Strength','https://example.com/row',0,NULL),(12,'Walking Lunges','Dumbbell','Legs','Strength','https://example.com/lunges',0,NULL),(13,'Custom','Barbell','Shoulders','Strength','https://www.youtube.com/watch?v=clLfwYp8dSQ',1,'cl001'),(14,'Custom','Barbell','Back','Strength','https://www.youtube.com/watch?v=clLfwYp8dSQ',1,NULL);
 /*!40000 ALTER TABLE `exercises` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -259,7 +260,7 @@ CREATE TABLE `goals` (
   PRIMARY KEY (`goal_id`),
   KEY `idx_goals_client_id` (`client_id`),
   CONSTRAINT `fk_goals_client` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -270,6 +271,34 @@ LOCK TABLES `goals` WRITE;
 /*!40000 ALTER TABLE `goals` DISABLE KEYS */;
 INSERT INTO `goals` VALUES (1,'cl001',168.00,9000,1.50,4),(2,'cl002',128.00,8000,1.00,3),(3,'cl003',175.00,10000,1.25,5),(4,'cl004',120.00,8500,1.00,4),(5,'cl005',185.00,9500,1.75,5),(6,'cl006',115.00,7000,0.75,3),(7,'cl007',178.00,9000,1.50,4),(8,'cl008',125.00,8200,1.00,3),(9,'cl009',168.00,10000,1.25,5),(10,'cl010',118.00,7800,1.00,3),(11,'cl011',190.00,10500,1.75,5),(12,'cl012',122.00,8400,1.25,4),(13,'cl013',180.00,8800,1.50,4),(14,'cl014',116.00,7600,0.75,3),(15,'cl015',176.00,9200,1.25,4),(16,'cl016',120.00,8000,1.00,3);
 /*!40000 ALTER TABLE `goals` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `invoice`
+--
+
+DROP TABLE IF EXISTS `invoice`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `invoice` (
+  `invoice_id` int NOT NULL AUTO_INCREMENT,
+  `client_id` varchar(50) NOT NULL,
+  `amount` decimal(8,2) DEFAULT NULL,
+  `billing_month` varchar(20) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`invoice_id`),
+  KEY `client_id` (`client_id`),
+  CONSTRAINT `invoice_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `invoice`
+--
+
+LOCK TABLES `invoice` WRITE;
+/*!40000 ALTER TABLE `invoice` DISABLE KEYS */;
+/*!40000 ALTER TABLE `invoice` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -288,7 +317,7 @@ CREATE TABLE `logging` (
   PRIMARY KEY (`log_id`),
   KEY `idx_logging_client_id` (`client_id`),
   CONSTRAINT `fk_logging_client` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -297,7 +326,7 @@ CREATE TABLE `logging` (
 
 LOCK TABLES `logging` WRITE;
 /*!40000 ALTER TABLE `logging` DISABLE KEYS */;
-INSERT INTO `logging` VALUES (1,'cl001','2026-03-10',8421,2280),(2,'cl002','2026-03-10',7030,1825),(3,'cl003','2026-03-10',9650,2410),(4,'cl004','2026-03-10',8112,1770),(5,'cl005','2026-03-10',10245,2555),(6,'cl006','2026-03-10',6894,1690),(7,'cl007','2026-03-10',9340,2210),(8,'cl008','2026-03-10',7520,1800),(9,'cl009','2026-03-10',9985,2360),(10,'cl010','2026-03-10',7840,1755),(11,'cl011','2026-03-10',10820,2620),(12,'cl012','2026-03-10',8160,1845),(13,'cl013','2026-03-10',8890,2265),(14,'cl014','2026-03-10',7415,1710),(15,'cl015','2026-03-10',9120,2325),(16,'cl016','2026-03-10',7985,1790);
+INSERT INTO `logging` VALUES (1,'cl001','2026-03-10',8421,2280),(2,'cl002','2026-03-10',7030,1825),(3,'cl003','2026-03-10',9650,2410),(4,'cl004','2026-03-10',8112,1770),(5,'cl005','2026-03-10',10245,2555),(6,'cl006','2026-03-10',6894,1690),(7,'cl007','2026-03-10',9340,2210),(8,'cl008','2026-03-10',7520,1800),(9,'cl009','2026-03-10',9985,2360),(10,'cl010','2026-03-10',7840,1755),(11,'cl011','2026-03-10',10820,2620),(12,'cl012','2026-03-10',8160,1845),(13,'cl013','2026-03-10',8890,2265),(14,'cl014','2026-03-10',7415,1710),(15,'cl015','2026-03-10',9120,2325),(16,'cl016','2026-03-10',7985,1790),(17,'cl001','2026-04-08',9500,2300),(18,'cl001','2026-04-09',8800,2150);
 /*!40000 ALTER TABLE `logging` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -321,7 +350,7 @@ CREATE TABLE `meal_log` (
   KEY `idx_meal_log_meal_id` (`meal_id`),
   CONSTRAINT `fk_meal_log_client` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_meal_log_meal` FOREIGN KEY (`meal_id`) REFERENCES `meals` (`meal_id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -330,7 +359,7 @@ CREATE TABLE `meal_log` (
 
 LOCK TABLES `meal_log` WRITE;
 /*!40000 ALTER TABLE `meal_log` DISABLE KEYS */;
-INSERT INTO `meal_log` VALUES (1,'cl001',1,'2026-03-10',510,'Finished everything.','2026-03-10 12:20:00'),(2,'cl001',2,'2026-03-10',700,'Extra rice portion.','2026-03-10 17:15:00'),(3,'cl002',3,'2026-03-10',360,'Skipped granola.','2026-03-10 12:40:00'),(4,'cl002',4,'2026-03-10',500,'No dressing.','2026-03-10 16:50:00'),(5,'cl003',5,'2026-03-10',455,'As planned.','2026-03-10 16:20:00'),(6,'cl004',6,'2026-03-10',330,'Post workout shake.','2026-03-10 11:45:00'),(7,'cl005',7,'2026-03-10',735,'Large dinner.','2026-03-10 22:40:00'),(8,'cl006',8,'2026-03-10',400,'Used less avocado.','2026-03-10 13:25:00'),(9,'cl007',9,'2026-03-10',500,'Good breakfast.','2026-03-10 12:10:00'),(10,'cl008',10,'2026-03-10',420,'Light lunch.','2026-03-10 17:20:00');
+INSERT INTO `meal_log` VALUES (1,'cl001',1,'2026-03-10',510,'Finished everything.','2026-03-10 12:20:00'),(2,'cl001',2,'2026-03-10',700,'Extra rice portion.','2026-03-10 17:15:00'),(3,'cl002',3,'2026-03-10',360,'Skipped granola.','2026-03-10 12:40:00'),(4,'cl002',4,'2026-03-10',500,'No dressing.','2026-03-10 16:50:00'),(5,'cl003',5,'2026-03-10',455,'As planned.','2026-03-10 16:20:00'),(6,'cl004',6,'2026-03-10',330,'Post workout shake.','2026-03-10 11:45:00'),(7,'cl005',7,'2026-03-10',735,'Large dinner.','2026-03-10 22:40:00'),(8,'cl006',8,'2026-03-10',400,'Used less avocado.','2026-03-10 13:25:00'),(9,'cl007',9,'2026-03-10',500,'Good breakfast.','2026-03-10 12:10:00'),(10,'cl008',10,'2026-03-10',420,'Light lunch.','2026-03-10 17:20:00'),(11,'cl001',NULL,'2026-04-09',1500,'34rg45tg4','2026-04-09 21:09:43');
 /*!40000 ALTER TABLE `meal_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -387,7 +416,7 @@ CREATE TABLE `messages` (
   KEY `idx_messages_receiver_id` (`receiver_id`),
   CONSTRAINT `fk_messages_receiver` FOREIGN KEY (`receiver_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_messages_sender` FOREIGN KEY (`sender_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -396,7 +425,7 @@ CREATE TABLE `messages` (
 
 LOCK TABLES `messages` WRITE;
 /*!40000 ALTER TABLE `messages` DISABLE KEYS */;
-INSERT INTO `messages` VALUES (1,'cl001','cl017','Hey coach, can we adjust my workout?','2026-03-10 14:00:00',1),(2,'cl017','cl001','Sure, let us reduce volume this week.','2026-03-10 14:15:00',1),(3,'cl002','cl018','Can I swap salmon for chicken?','2026-03-10 15:00:00',1),(4,'cl018','cl002','Yes, just keep protein about the same.','2026-03-10 15:05:00',0),(5,'cl011','cl019','Can we add another leg day?','2026-03-10 19:10:00',1),(6,'cl020','cl016','Reminder: focus on form this session.','2026-03-10 22:30:00',0);
+INSERT INTO `messages` VALUES (1,'cl001','cl017','Hey coach, can we adjust my workout?','2026-03-10 14:00:00',1),(2,'cl017','cl001','Sure, let us reduce volume this week.','2026-03-10 14:15:00',1),(3,'cl002','cl018','Can I swap salmon for chicken?','2026-03-10 15:00:00',1),(4,'cl018','cl002','Yes, just keep protein about the same.','2026-03-10 15:05:00',0),(5,'cl011','cl019','Can we add another leg day?','2026-03-10 19:10:00',1),(6,'cl020','cl016','Reminder: focus on form this session.','2026-03-10 22:30:00',0),(7,'cl017','cl001','Hello','2026-04-16 22:10:37',0),(8,'cl001','cl017','Hello','2026-04-16 22:10:46',0);
 /*!40000 ALTER TABLE `messages` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -429,6 +458,37 @@ LOCK TABLES `mood_log` WRITE;
 /*!40000 ALTER TABLE `mood_log` DISABLE KEYS */;
 INSERT INTO `mood_log` VALUES (1,'cl001','2026-03-10',4,'Good','Strong workout today.','2026-03-11 00:00:00'),(2,'cl002','2026-03-10',3,'Okay','A little tired after work.','2026-03-11 00:10:00'),(3,'cl003','2026-03-10',5,'Great','Hit a new PR.','2026-03-11 00:20:00'),(4,'cl004','2026-03-10',2,'Low','Poor sleep last night.','2026-03-11 00:30:00'),(5,'cl005','2026-03-10',4,'Motivated','Meal plan is going well.','2026-03-11 00:40:00'),(6,'cl006','2026-03-10',3,'Neutral','Rest day.','2026-03-11 00:50:00');
 /*!40000 ALTER TABLE `mood_log` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `notification_preferences`
+--
+
+DROP TABLE IF EXISTS `notification_preferences`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `notification_preferences` (
+  `preference_id` int NOT NULL AUTO_INCREMENT,
+  `client_id` varchar(50) NOT NULL,
+  `daily_water_reminder` tinyint(1) NOT NULL DEFAULT '1',
+  `workout_today_reminder` tinyint(1) NOT NULL DEFAULT '1',
+  `email_notifications` tinyint(1) NOT NULL DEFAULT '1',
+  `in_app_notifications` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`preference_id`),
+  UNIQUE KEY `client_id` (`client_id`),
+  CONSTRAINT `fk_notification_preferences_client` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `notification_preferences`
+--
+
+LOCK TABLES `notification_preferences` WRITE;
+/*!40000 ALTER TABLE `notification_preferences` DISABLE KEYS */;
+/*!40000 ALTER TABLE `notification_preferences` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -518,6 +578,37 @@ LOCK TABLES `nutrition_plan` WRITE;
 /*!40000 ALTER TABLE `nutrition_plan` DISABLE KEYS */;
 INSERT INTO `nutrition_plan` VALUES (1,'cl001','cl018','Lean Bulk'),(2,'cl002','cl018','Fat Loss'),(3,'cl003','cl019','Maintenance'),(4,'cl004','cl018','Fat Loss'),(5,'cl005','cl018','Performance'),(6,'cl006','cl018','Light Deficit'),(7,'cl007','cl019','Maintenance'),(8,'cl008','cl018','Fat Loss'),(9,'cl009','cl018','Lean Bulk'),(10,'cl010','cl018','Fat Loss'),(11,'cl011','cl019','Performance'),(12,'cl012','cl018','Maintenance');
 /*!40000 ALTER TABLE `nutrition_plan` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `payment_method`
+--
+
+DROP TABLE IF EXISTS `payment_method`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `payment_method` (
+  `payment_id` int NOT NULL AUTO_INCREMENT,
+  `client_id` varchar(50) NOT NULL,
+  `card_type` varchar(20) DEFAULT NULL,
+  `last4` char(4) DEFAULT NULL,
+  `expiry_month` int DEFAULT NULL,
+  `expiry_year` int DEFAULT NULL,
+  `is_default` tinyint(1) DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`payment_id`),
+  KEY `client_id` (`client_id`),
+  CONSTRAINT `payment_method_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `payment_method`
+--
+
+LOCK TABLES `payment_method` WRITE;
+/*!40000 ALTER TABLE `payment_method` DISABLE KEYS */;
+/*!40000 ALTER TABLE `payment_method` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -613,7 +704,7 @@ CREATE TABLE `workout_log` (
   KEY `idx_workout_log_exercise_id` (`exercise_id`),
   CONSTRAINT `fk_workout_log_client` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_workout_log_exercise` FOREIGN KEY (`exercise_id`) REFERENCES `exercises` (`exercise_id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -645,8 +736,8 @@ CREATE TABLE `workout_plan` (
   KEY `idx_workout_plan_client_id` (`client_id`),
   KEY `idx_workout_plan_created_by` (`created_by`),
   CONSTRAINT `fk_workout_plan_client` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_workout_plan_created_by` FOREIGN KEY (`created_by`) REFERENCES `fitness_coach` (`coach_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CONSTRAINT `workout_plan_client_FK` FOREIGN KEY (`created_by`) REFERENCES `client` (`client_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -655,7 +746,7 @@ CREATE TABLE `workout_plan` (
 
 LOCK TABLES `workout_plan` WRITE;
 /*!40000 ALTER TABLE `workout_plan` DISABLE KEYS */;
-INSERT INTO `workout_plan` VALUES (1,'cl001','cl017','4x/week','Intermediate','2026-03-05 14:00:00',0),(2,'cl002','cl017','3x/week','Beginner','2026-03-05 14:15:00',0),(3,'cl003','cl019','5x/week','Intermediate','2026-03-05 14:30:00',0),(4,'cl004','cl020','4x/week','Beginner','2026-03-05 14:45:00',0),(5,'cl005','cl017','5x/week','Advanced','2026-03-05 15:00:00',0),(6,'cl006','cl017','3x/week','Beginner','2026-03-05 15:15:00',1),(7,'cl007','cl019','4x/week','Intermediate','2026-03-05 15:30:00',0),(8,'cl008','cl020','3x/week','Beginner','2026-03-05 15:45:00',0),(9,'cl009','cl017','4x/week','Intermediate','2026-03-05 16:00:00',0),(10,'cl010','cl017','3x/week','Beginner','2026-03-05 16:15:00',0),(11,'cl011','cl019','5x/week','Advanced','2026-03-05 16:30:00',0),(12,'cl012','cl020','4x/week','Intermediate','2026-03-05 16:45:00',0);
+INSERT INTO `workout_plan` VALUES (1,'cl001','cl017','4x/week','Intermediate','2026-03-05 14:00:00',0),(2,'cl002','cl017','3x/week','Beginner','2026-03-05 14:15:00',0),(3,'cl003','cl019','5x/week','Intermediate','2026-03-05 14:30:00',0),(4,'cl004','cl020','4x/week','Beginner','2026-03-05 14:45:00',0),(5,'cl005','cl017','5x/week','Advanced','2026-03-05 15:00:00',0),(6,'cl006','cl017','3x/week','Beginner','2026-03-05 15:15:00',1),(7,'cl007','cl019','4x/week','Intermediate','2026-03-05 15:30:00',0),(8,'cl008','cl020','3x/week','Beginner','2026-03-05 15:45:00',0),(9,'cl009','cl017','4x/week','Intermediate','2026-03-05 16:00:00',0),(10,'cl010','cl017','3x/week','Beginner','2026-03-05 16:15:00',0),(11,'cl011','cl019','5x/week','Advanced','2026-03-05 16:30:00',0),(12,'cl012','cl020','4x/week','Intermediate','2026-03-05 16:45:00',0),(14,'cl013','cl017','3','Intermediate','2026-04-09 21:09:10',0);
 /*!40000 ALTER TABLE `workout_plan` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -706,4 +797,4 @@ SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-06 23:08:35
+-- Dump completed on 2026-05-01 14:06:45
