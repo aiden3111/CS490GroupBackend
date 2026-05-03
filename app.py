@@ -37,6 +37,7 @@ from routes.notification_preferences import notification_preferences_bp
 from routes.payment import payment_bp
 from routes.invoice import invoice_bp
 from routes.review import review_bp
+from routes.progress import progress_bp
 load_dotenv()
 
 app = Flask(__name__)
@@ -139,6 +140,7 @@ app.register_blueprint(notification_preferences_bp, url_prefix="/api/notificatio
 app.register_blueprint(payment_bp, url_prefix="/api/payment")
 app.register_blueprint(invoice_bp, url_prefix="/api/invoice")
 app.register_blueprint(review_bp, url_prefix="/api/review")
+app.register_blueprint(progress_bp, url_prefix="/progress")
 
 if __name__ == "__main__":
         socketio.run(app, debug=True)
