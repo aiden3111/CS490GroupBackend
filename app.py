@@ -42,7 +42,7 @@ load_dotenv()
 
 app = Flask(__name__)
 #code for live messaging using flask-socketio
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 @socketio.on('join')
 def on_join(data):
     room = data['room']
