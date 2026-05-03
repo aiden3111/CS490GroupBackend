@@ -143,4 +143,4 @@ app.register_blueprint(review_bp, url_prefix="/api/review")
 app.register_blueprint(progress_bp, url_prefix="/progress")
 
 if __name__ == "__main__":
-        socketio.run(app, debug=True)
+        socketio.run(app, debug=False)
