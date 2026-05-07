@@ -108,9 +108,7 @@ def home():
             })
 
 
-@app.route('/api/uploads/<filename>')
-def serve_uploads(filename):
-    return send_from_directory('uploads', filename)
+
 
 
 #blueprints for each of the routes, register to app
