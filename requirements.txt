@@ -7,5 +7,5 @@ google-auth-oauthlib
 google-auth-httplib2
 mysql-connector-python
 flasgger
-gunicorn
-eventlet
+gunicorn[eventlet]==23.0.0
+eventlet==0.40.3
