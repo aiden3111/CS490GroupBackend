@@ -58,7 +58,7 @@ def get_photos(client_id):
         conn.close()
 
 
-
+"""
 @progress_bp.route("/delete/<path:filename>", methods=["DELETE"]) 
 def delete_photo(filename):
     
@@ -80,3 +80,5 @@ def delete_photo(filename):
     finally:
         cursor.close()
         conn.close()
+"""
+        
