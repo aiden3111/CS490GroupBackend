@@ -6,6 +6,7 @@ from flasgger import Swagger
 from db import get_conn
 from flask import send_from_directory
 import os
+import urllib.parse
 from routes.login import login_bp
 from routes.google_login import google_login_bp
 from routes.register import register_bp
@@ -112,12 +113,13 @@ def home():
 
 
 
-@app.route('/api/uploads/<filename>')
+
+@app.route('/api/uploads/<path:filename>')
 def uploaded_file(filename):
-
-    uploads_dir = os.path.join(os.getcwd(), 'uploads')
-    return send_from_directory(uploads_dir, filename)
-
+  
+    decoded_filename = urllib.parse.unquote(filename)
+    uploads_dir = os.path.join(app.root_path, 'uploads')
+    return send_from_directory(uploads_dir, decoded_filename)
 
 #blueprints for each of the routes, register to app
 app.register_blueprint(login_bp, url_prefix="/api/login")
