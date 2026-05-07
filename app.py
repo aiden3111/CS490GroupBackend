@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from flask_socketio import SocketIO, emit, join_room
 from flasgger import Swagger
 from db import get_conn
+from flask import send_from_directory
 from routes.login import login_bp
 from routes.google_login import google_login_bp
 from routes.register import register_bp
@@ -38,6 +39,8 @@ from routes.payment import payment_bp
 from routes.invoice import invoice_bp
 from routes.review import review_bp
 from routes.progress import progress_bp
+
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -103,7 +106,6 @@ def home():
                       "/api/nutrition_plan_modifications/<string:coach_id>/<string:client_id>/<string:nutrition_plan_id>/meals", "/api/calorie_graph/<string:client_id>", "/api/steps_graph/<string:client_id>", "/api/my_exercises/<string:client_id>", "/api/admin/accounts", 
                       "/api/admin/accounts/<string:client_id>", "/api/messaging/<string:sender_id>/<string:receiver_id>", "/api/coach_ratings/<string:coach_id>", "/api/reports/", "/api/messages/conversations/<string:client_id>", "/api/notification-preferences/", "/api/notification-preferences/<client_id>", ""]
             })
-from flask import send_from_directory
 
 
 @app.route('/api/uploads/<filename>')
