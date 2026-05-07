@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from db import get_conn
 import os 
-import urllib.parse  
+
 
 progress_bp = Blueprint("progress", __name__)
 

@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from flask_socketio import SocketIO, emit, join_room
 from flasgger import Swagger
 from db import get_conn
-from flask import send_from_directory
 from routes.login import login_bp
 from routes.google_login import google_login_bp
 from routes.register import register_bp
