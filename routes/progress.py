@@ -58,27 +58,3 @@ def get_photos(client_id):
         conn.close()
 
 
-"""
-@progress_bp.route("/delete/<path:filename>", methods=["DELETE"]) 
-def delete_photo(filename):
-    
-    decoded_filename = urllib.parse.unquote(filename)
-    
-    
-    filepath = os.path.join(UPLOAD_FOLDER, decoded_filename)
-    
-    if os.path.exists(filepath):
-        os.remove(filepath)
-
-  
-    conn = get_conn()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("DELETE FROM progress_photos WHERE image_url LIKE %s", (f"%{decoded_filename}%",))
-        conn.commit()
-        return jsonify({"message": "Photo deleted successfully"}), 200
-    finally:
-        cursor.close()
-        conn.close()
-"""
-        
