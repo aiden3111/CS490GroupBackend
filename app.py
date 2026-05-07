@@ -115,7 +115,8 @@ def home():
 @app.route('/api/uploads/<filename>')
 def uploaded_file(filename):
 
-    return send_from_directory(os.path.join(app.root_path, 'uploads'), filename)
+    uploads_dir = os.path.join(os.getcwd(), 'uploads')
+    return send_from_directory(uploads_dir, filename)
 
 
 #blueprints for each of the routes, register to app
