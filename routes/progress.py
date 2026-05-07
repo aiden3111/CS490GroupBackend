@@ -36,7 +36,7 @@ def upload_photo():
         cursor.execute("""
             INSERT INTO progress_photos (client_id, photo_type, image_url)
             VALUES (%s, %s, %s)
-        """, (client_id, photo_type, filepath))
+        """, (client_id, photo_type, filename))
 
         conn.commit()
         return jsonify({"message": "Photo uploaded"}), 201
