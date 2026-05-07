@@ -21,6 +21,9 @@ def upload_photo():
     if not all([client_id, photo_type, file]):
         return jsonify({"error": "Missing fields"}), 400
     
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+    
     filename = f"{client_id}_{photo_type}_{file.filename}"
     filepath = os.path.join(UPLOAD_FOLDER, filename)
 
