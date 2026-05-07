@@ -50,12 +50,13 @@ def upload_photo():
 
 @progress_bp.route("/<string:client_id>", methods=["GET"])
 def get_photos(client_id):
-    conn = get_conn()
    
+    conn = None
+    cursor = None
     try:
+        conn = get_conn() 
         cursor = conn.cursor(dictionary=True)
         
-
         cursor.execute("""
             SELECT photo_type, image_url
             FROM progress_photos
@@ -66,12 +67,13 @@ def get_photos(client_id):
         return jsonify(photos), 200
     
     except Exception as e:
-       
-        return jsonify({"error": str(e)}), 500
+        
+        print(f"Erro no GET photos: {e}")
+        return jsonify({"error_real": str(e)}), 500
     
     finally:
-        if 'cursor' in locals(): cursor.close()
-        if 'conn' in locals(): conn.close()
+        if cursor: cursor.close()
+        if conn: conn.close()
 
 
 @progress_bp.route("/delete/<path:filename>", methods=["DELETE"])
