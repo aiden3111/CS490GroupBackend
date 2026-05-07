@@ -74,7 +74,7 @@ def delete_photo(filename):
     conn = get_conn()
     cursor = conn.cursor()
     try:
-        cursor.execute("DELETE FROM progress_photos WHERE image_url LIKE %s", (f"%{decoded_filename}",))
+        cursor.execute("DELETE FROM progress_photos WHERE image_url LIKE %s", (f"%{decoded_filename}%",))
         conn.commit()
         return jsonify({"message": "Photo deleted successfully"}), 200
     finally:
