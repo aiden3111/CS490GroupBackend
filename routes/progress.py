@@ -6,6 +6,8 @@ import os
 progress_bp = Blueprint("progress", __name__)
 
 UPLOAD_FOLDER = "uploads"
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 @progress_bp.route("/upload", methods=["POST"])
 def upload_photo():
@@ -32,7 +34,9 @@ def upload_photo():
 
         conn.commit()
         return jsonify({"message": "Photo uploaded"}), 201
-    
+    except Exception as e:
+        
+        return jsonify({"deu erro aqui o": str(e)}), 500
     finally:
         cursor.close()
         conn.close()
