@@ -8,7 +8,7 @@ coach_bp = Blueprint("coach", __name__)
 @coach_bp.route("/<string:coach_id>/settings", methods=["PUT"])
 def update_coach_settings(coach_id):
     """
-    Update a coach's settings (pricing, availability, specialty, certifications, status).
+    Update a coach's settings (pricing, availability, certifications, status).
     ---
     tags:
       - Coach
@@ -27,9 +27,6 @@ def update_coach_settings(coach_id):
               type: number
             availability:
               type: string
-            specialty:
-              type: string
-              enum: [fitness, nutrition, both]
             certifications:
               type: string
             status:
@@ -47,7 +44,7 @@ def update_coach_settings(coach_id):
 
     pricing = data.get("pricing")
     availability = data.get("availability")
-    specialty = data.get("specialty")
+   
     certifications = data.get("certifications")
     status = data.get("status")
 
@@ -63,9 +60,9 @@ def update_coach_settings(coach_id):
 
         cursor.execute("""
             UPDATE coach
-            SET pricing = %s, availability = %s, specialty = %s, certifications = %s, status = %s
+            SET pricing = %s, availability = %s, certifications = %s, status = %s
             WHERE coach_id = %s
-        """, (pricing, availability, specialty, certifications, status, coach_id))
+        """, (pricing, availability, certifications, status, coach_id))
 
         conn.commit()
         return jsonify({"message": "Coach settings updated successfully"}), 200
