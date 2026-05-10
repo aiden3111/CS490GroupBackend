@@ -62,7 +62,7 @@ def push_notification(cursor, user_id, type_, title, body="", send_email=False):
             """
             SELECT
                 COALESCE(np.in_app_notifications, 1) AS in_app_notifications,
-                COALESCE(np.email_notifications, 0) AS email_notifications,
+                COALESCE(np.email_notifications, 1) AS email_notifications,
                 c.email
             FROM client c
             LEFT JOIN notification_preferences np ON c.client_id = np.client_id
