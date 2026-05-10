@@ -334,12 +334,11 @@ def review_coach_application():
                         coach_id,
                         status,
                         pricing,
-                        availability,
-                        specialty
+                        availability
                     )
-                    VALUES (%s, %s, %s, %s, %s)
+                    VALUES (%s, %s, %s, %s)
                     """,
-                    (client_id, "active", pricing, availability, specialty)
+                    (client_id, "active", pricing, availability)
                 )
             else:
                 cursor.execute(
@@ -347,11 +346,10 @@ def review_coach_application():
                     UPDATE coach
                     SET status = %s,
                         pricing = %s,
-                        availability = %s,
-                        specialty = %s
+                        availability = %s
                     WHERE coach_id = %s
                     """,
-                    ("active", pricing, availability, specialty, client_id)
+                    ("active", pricing, availability, client_id)
                 )
 
             if specialty in ("fitness", "both"):
