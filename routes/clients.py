@@ -51,6 +51,37 @@ def get_client(client_id):
         conn.close()
 
 
+@clients_bp.route("/coach/<string:coach_id>/<string:client_id>", methods=["DELETE"])
+def remove_client_from_coach(coach_id, client_id):
+    """
+    Remove a client from a coach roster.
+    """
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            "SELECT client_id FROM client WHERE client_id = %s AND coach_id = %s",
+            (client_id, coach_id),
+        )
+        client = cursor.fetchone()
+        if not client:
+            return jsonify({"error": "Client is not assigned to this coach"}), 404
+
+        cursor.execute(
+            "UPDATE client SET coach_id = NULL WHERE client_id = %s AND coach_id = %s",
+            (client_id, coach_id),
+        )
+        conn.commit()
+        return jsonify({"message": "Client removed from roster"}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
 @clients_bp.route("/<string:client_id>", methods=["PUT"])
 def update_client(client_id):
     """
