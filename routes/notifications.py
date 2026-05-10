@@ -1,7 +1,109 @@
 from flask import Blueprint, request, jsonify
 from db import get_conn
+from routes.notify import push_notification
 
 notifications_bp = Blueprint("notifications_bp", __name__, url_prefix="/api/notifications")
+
+
+def _daily_notification_exists(cursor, user_id, notif_type, title):
+    cursor.execute(
+        """
+        SELECT notification_id
+        FROM notifications
+        WHERE user_id = %s
+          AND type = %s
+          AND title = %s
+          AND channel = 'in_app'
+          AND DATE(created_at) = CURDATE()
+        LIMIT 1
+        """,
+        (user_id, notif_type, title),
+    )
+    return cursor.fetchone() is not None
+
+
+@notifications_bp.route("/daily-reminders/<user_id>", methods=["POST"])
+def create_daily_reminders(user_id):
+    conn = get_conn()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            """
+            SELECT daily_water_reminder, workout_today_reminder, in_app_notifications
+            FROM notification_preferences
+            WHERE client_id = %s
+            """,
+            (user_id,),
+        )
+        preferences = cursor.fetchone()
+
+        if not preferences:
+            cursor.execute(
+                """
+                INSERT INTO notification_preferences
+                (client_id, daily_water_reminder, workout_today_reminder, email_notifications, in_app_notifications)
+                VALUES (%s, 1, 1, 1, 1)
+                """,
+                (user_id,),
+            )
+            preferences = {
+                "daily_water_reminder": 1,
+                "workout_today_reminder": 1,
+                "in_app_notifications": 1,
+            }
+
+        created = []
+        if not preferences.get("in_app_notifications"):
+            conn.commit()
+            return jsonify({"success": True, "created": created}), 200
+
+        if preferences.get("daily_water_reminder") and not _daily_notification_exists(
+            cursor,
+            user_id,
+            "steps",
+            "Daily Steps Reminder",
+        ):
+            notification_id = push_notification(
+                cursor,
+                user_id,
+                "steps",
+                "Daily Steps Reminder",
+                "Remember to log your steps today.",
+            )
+            if notification_id:
+                created.append(notification_id)
+
+        if preferences.get("workout_today_reminder") and not _daily_notification_exists(
+            cursor,
+            user_id,
+            "workout",
+            "Daily Workout Reminder",
+        ):
+            notification_id = push_notification(
+                cursor,
+                user_id,
+                "workout",
+                "Daily Workout Reminder",
+                "Check your workout plan and log today's workout when you're done.",
+            )
+            if notification_id:
+                created.append(notification_id)
+
+        conn.commit()
+        return jsonify({"success": True, "created": created}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({
+            "success": False,
+            "message": "Failed to create daily reminders",
+            "error": str(e),
+        }), 500
+
+    finally:
+        cursor.close()
+        conn.close()
 
 
 @notifications_bp.route("/<user_id>", methods=["GET"])
@@ -234,17 +336,19 @@ def create_notification():
     cursor = conn.cursor(dictionary=True)
 
     try:
-        query = """
-            INSERT INTO notifications (user_id, type, title, body, channel, is_read)
-            VALUES (%s, %s, %s, %s, %s, 0)
-        """
-        cursor.execute(query, (user_id, notif_type, title, body, channel))
+        if channel != "in_app":
+            return jsonify({
+                "success": False,
+                "message": "Only in_app notifications are supported right now"
+            }), 400
+
+        notification_id = push_notification(cursor, user_id, notif_type, title, body)
         conn.commit()
 
         return jsonify({
             "success": True,
-            "message": "Notification created successfully",
-            "notification_id": cursor.lastrowid
+            "message": "Notification created successfully" if notification_id else "In-app notifications are disabled for this user",
+            "notification_id": notification_id
         }), 201
 
     except Exception as e:

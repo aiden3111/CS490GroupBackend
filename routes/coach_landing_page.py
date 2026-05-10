@@ -155,6 +155,7 @@ def send_hire_request(coach_id):
             INSERT INTO coach_request (coach_id, client_id, status)
             VALUES (%s, %s, 'pending')
         """, (coach_id, client_id))
+        request_id = cursor.lastrowid
 
         # Notify the coach about the new hire request
         cursor.execute("SELECT first_name, last_name FROM client WHERE client_id = %s", (client_id,))
@@ -164,7 +165,7 @@ def send_hire_request(coach_id):
 
         conn.commit()
 
-        return jsonify({"message": "Hire request sent successfully", "request_id": cursor.lastrowid}), 201
+        return jsonify({"message": "Hire request sent successfully", "request_id": request_id}), 201
 
     except Exception as e:
         conn.rollback()
