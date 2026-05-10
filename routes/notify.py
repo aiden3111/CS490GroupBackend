@@ -15,6 +15,16 @@ def _get_value(row, key, index, default=None):
 
 def _send_resend_email(to_email, subject, body):
     api_key = os.getenv("RESEND_API_KEY")
+    if not api_key:
+        print("Resend email skipped: RESEND_API_KEY is not set")
+        return False
+    if not to_email:
+        print("Resend email skipped: recipient email is missing")
+        return False
+
+    if os.getenv("EMAIL_DEBUG", "").lower() == "true":
+        print(f"Resend email attempt: to={to_email}, subject={subject}")
+
     if not api_key or not to_email:
         return
 
@@ -43,11 +53,13 @@ def _send_resend_email(to_email, subject, body):
 
     try:
         with urllib.request.urlopen(req, timeout=8):
-            return
+            print(f"Resend email sent: to={to_email}, subject={subject}")
+            return True
     except urllib.error.HTTPError as e:
         print(f"Resend email failed: {e.code} {e.read().decode('utf-8', errors='ignore')}")
     except Exception as e:
         print(f"Resend email failed: {e}")
+    return False
 
 
 def push_notification(cursor, user_id, type_, title, body="", send_email=False):
@@ -76,6 +88,12 @@ def push_notification(cursor, user_id, type_, title, body="", send_email=False):
         email_enabled = bool(_get_value(preferences, "email_notifications", 1, False))
         email = _get_value(preferences, "email", 2)
 
+        if send_email and os.getenv("EMAIL_DEBUG", "").lower() == "true":
+            print(
+                "Notification email check: "
+                f"user_id={user_id}, email={email}, email_enabled={email_enabled}, title={title}"
+            )
+
         notification_id = None
         if in_app_enabled:
             cursor.execute(
@@ -89,7 +107,10 @@ def push_notification(cursor, user_id, type_, title, body="", send_email=False):
 
         if send_email and email_enabled:
             _send_resend_email(email, title, body)
+        elif send_email:
+            print(f"Resend email skipped: email notifications disabled for user_id={user_id}")
 
         return notification_id
-    except Exception:
+    except Exception as e:
+        print(f"Notification failed: user_id={user_id}, title={title}, error={e}")
         return None
