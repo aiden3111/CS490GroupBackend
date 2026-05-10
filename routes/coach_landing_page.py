@@ -119,6 +119,8 @@ def send_hire_request(coach_id):
         return jsonify({"error": "client_id is required"}), 400
     if not payment_id:
         return jsonify({"error": "payment_id is required"}), 400
+    if client_id == coach_id:
+        return jsonify({"error": "You cannot request yourself as a coach."}), 400
 
     conn = get_conn()
     cursor = conn.cursor(dictionary=True)
