@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from db import get_conn
+from routes.notify import push_notification
 
 
 admin_bp = Blueprint("admin", __name__)
@@ -502,6 +503,12 @@ def disable_user():
                 WHERE client_id = %s
             """, (client_id,))
 
+            push_notification(
+                cursor, client_id, "system",
+                "Account Disabled",
+                "Your account has been disabled by an administrator. Please contact support.",
+            )
+
             conn.commit()
             return jsonify({"message": "Client disabled successfully"}), 200
 
@@ -516,6 +523,12 @@ def disable_user():
                 SET status = 'suspended'
                 WHERE coach_id = %s
             """, (coach_id,))
+
+            push_notification(
+                cursor, coach_id, "system",
+                "Account Suspended",
+                "Your coach account has been suspended by an administrator. Please contact support.",
+            )
 
             conn.commit()
             return jsonify({"message": "Coach suspended successfully"}), 200
@@ -596,6 +609,12 @@ def reactivate_user():
                 WHERE client_id = %s
             """, (client_id,))
 
+            push_notification(
+                cursor, client_id, "system",
+                "Account Reactivated",
+                "Your account has been reactivated. Welcome back!",
+            )
+
             conn.commit()
             return jsonify({"message": "Client reactivated successfully"}), 200
 
@@ -610,6 +629,12 @@ def reactivate_user():
                 SET status = 'active'
                 WHERE coach_id = %s
             """, (coach_id,))
+
+            push_notification(
+                cursor, coach_id, "system",
+                "Account Reactivated",
+                "Your coach account has been reactivated. Welcome back!",
+            )
 
             conn.commit()
             return jsonify({"message": "Coach reactivated successfully"}), 200

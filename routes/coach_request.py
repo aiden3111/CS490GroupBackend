@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from db import get_conn
+from routes.notify import push_notification
 
 # display all a coaches client requests and be able to accept or deny them
 coach_request_bp = Blueprint("coach_request", __name__)
@@ -115,6 +116,16 @@ def update_coach_request(coach_id, request_id):
                 }), 400
 
 
+        # If client_id wasn't sent (e.g. on reject), look it up from the request row
+        if not client_id:
+            cursor.execute(
+                "SELECT client_id FROM coach_request WHERE request_id = %s AND coach_id = %s",
+                (request_id, coach_id),
+            )
+            req_row = cursor.fetchone()
+            if req_row:
+                client_id = req_row["client_id"]
+
         cursor.execute("""
             UPDATE coach_request
             SET status = %s
@@ -127,6 +138,25 @@ def update_coach_request(coach_id, request_id):
                 SET coach_id = %s
                 WHERE client_id = %s
             """, (coach_id, client_id))
+
+        # Notify the client of the decision
+        if client_id:
+            cursor.execute("SELECT first_name, last_name FROM client WHERE client_id = %s", (coach_id,))
+            coach_row = cursor.fetchone()
+            coach_name = f"{coach_row['first_name']} {coach_row['last_name']}" if coach_row else "Your coach"
+            if status == "accepted":
+                push_notification(
+                    cursor, client_id, "coach",
+                    "Request Accepted",
+                    f"{coach_name} accepted your request! You can now message them.",
+                )
+            elif status == "rejected":
+                push_notification(
+                    cursor, client_id, "coach",
+                    "Request Not Accepted",
+                    f"Your request to {coach_name} was not accepted.",
+                )
+
         conn.commit()
 
         if cursor.rowcount == 0:

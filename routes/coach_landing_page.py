@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from db import get_conn
+from routes.notify import push_notification
 
 coach_landing_page_bp = Blueprint("coach_landing_page", __name__)
 
@@ -152,6 +153,13 @@ def send_hire_request(coach_id):
             INSERT INTO coach_request (coach_id, client_id, status)
             VALUES (%s, %s, 'pending')
         """, (coach_id, client_id))
+
+        # Notify the coach about the new hire request
+        cursor.execute("SELECT first_name, last_name FROM client WHERE client_id = %s", (client_id,))
+        client_row = cursor.fetchone()
+        client_name = f"{client_row['first_name']} {client_row['last_name']}" if client_row else "A client"
+        push_notification(cursor, coach_id, "coach", "New Hire Request", f"{client_name} wants to work with you.")
+
         conn.commit()
 
         return jsonify({"message": "Hire request sent successfully", "request_id": cursor.lastrowid}), 201

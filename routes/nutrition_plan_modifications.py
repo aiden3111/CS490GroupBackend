@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from db import get_conn
+from routes.notify import push_notification
 
 nutrition_plan_modifications_bp = Blueprint("nutrition_plan_modifications", __name__)
 
@@ -150,6 +151,10 @@ def update_nutrition_plan(coach_id, client_id, nutrition_plan_id):
                     WHERE nutrition_plan_id = %s AND meal_id = %s
                 '''
             cursor.execute(query, (meal['meal_name'], meal['calories'], meal['time_of_day'], meal['description'], meal['protein'], meal['carbs'], meal['fats'], meal['day_number'], nutrition_plan_id, meal['meal_id']))
+
+        # Notify the client that their nutrition plan was updated
+        push_notification(cursor, client_id, "nutrition", "Meal Plan Updated", "Your nutrition plan has been updated by your coach.")
+
         conn.commit()
         return jsonify({"message": "Nutrition plan updated successfully"}), 200
     except Exception as e:
@@ -373,10 +378,17 @@ def create_nutrition_plan_header():
             VALUES (%s, %s, %s)
         '''
         cursor.execute(query, (client_id, category, coach_id))
+        new_plan_id = cursor.lastrowid
+
+        # Notify client that a new nutrition plan was created for them
+        cursor2 = conn.cursor(dictionary=True)
+        cursor2.execute("SELECT first_name, last_name FROM client WHERE client_id = %s", (coach_id,))
+        coach_row = cursor2.fetchone()
+        cursor2.close()
+        coach_name = f"{coach_row['first_name']} {coach_row['last_name']}" if coach_row else "Your coach"
+        push_notification(cursor, client_id, "nutrition", "New Meal Plan", f"{coach_name} created a new nutrition plan for you.")
+
         conn.commit()
-        
-        
-        new_plan_id = cursor.lastrowid 
         return jsonify({"message": "Plan created", "nutrition_plan_id": new_plan_id}), 201
     except Exception as e:
         conn.rollback()

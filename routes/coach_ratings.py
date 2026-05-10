@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from db import get_conn
+from routes.notify import push_notification
 
 coach_ratings_bp = Blueprint("coach_ratings", __name__)
 
@@ -68,6 +69,15 @@ def rate_coach(coach_id):
             return jsonify({"error": "You can only review your assigned coach"}), 403
 
         cursor.execute("INSERT INTO reviews (coach_id, client_id, rating, comment) VALUES (%s, %s, %s, %s)", (coach_id, client_id, rating, comment))
+
+        # Notify the coach of the new review
+        cursor2 = conn.cursor(dictionary=True)
+        cursor2.execute("SELECT first_name, last_name FROM client WHERE client_id = %s", (client_id,))
+        client_row = cursor2.fetchone()
+        cursor2.close()
+        client_name = f"{client_row['first_name']} {client_row['last_name']}" if client_row else "A client"
+        push_notification(cursor, coach_id, "review", "New Review", f"{client_name} left you a {rating}-star review.")
+
         conn.commit()
         return jsonify({"message": "Review submitted successfully"}), 200
     except Exception as e:

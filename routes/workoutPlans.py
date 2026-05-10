@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from db import get_conn
+from routes.notify import push_notification
 
 workoutPlansPage = Blueprint("workoutPlansPage", __name__)
 
@@ -74,9 +75,18 @@ def create_workout_plan():
             """,
             (created_by, frequency, client_id, difficulty, is_draft)
         )
-        conn.commit()
-
         new_id = cursor.lastrowid
+
+        # Notify client if a coach created the plan for them
+        if created_by and created_by != client_id:
+            cursor2 = conn.cursor(dictionary=True)
+            cursor2.execute("SELECT first_name, last_name FROM client WHERE client_id = %s", (created_by,))
+            coach_row = cursor2.fetchone()
+            cursor2.close()
+            coach_name = f"{coach_row['first_name']} {coach_row['last_name']}" if coach_row else "Your coach"
+            push_notification(cursor, client_id, "workout", "New Workout Plan", f"{coach_name} created a new workout plan for you.")
+
+        conn.commit()
         cursor.close()
         conn.close()
 
@@ -348,6 +358,13 @@ def update_workout_plan(workout_plan_id):
         conn = get_conn()
         cursor = conn.cursor()
 
+        # Fetch plan info for notification before updating
+        cursor.execute(
+            "SELECT client_id, created_by FROM workout_plan WHERE workout_plan_id = %s",
+            (workout_plan_id,)
+        )
+        plan_info = cursor.fetchone()
+
         cursor.execute(
             """
             UPDATE workout_plan
@@ -358,13 +375,22 @@ def update_workout_plan(workout_plan_id):
             """,
             (frequency, difficulty, is_draft, workout_plan_id)
         )
-        conn.commit()
 
         if cursor.rowcount == 0:
+            conn.commit()
             cursor.close()
             conn.close()
             return jsonify({"error": "Workout plan not found."}), 404
 
+        # Notify client if a coach updated their plan
+        # plan_info is a tuple: (client_id, created_by)
+        if plan_info and plan_info[1] and plan_info[1] != plan_info[0]:
+            push_notification(
+                cursor, plan_info[0], "workout",
+                "Workout Plan Updated", "Your workout plan has been updated by your coach.",
+            )
+
+        conn.commit()
         cursor.close()
         conn.close()
 

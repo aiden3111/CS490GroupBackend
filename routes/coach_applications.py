@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from db import get_conn
 from datetime import datetime
+from routes.notify import push_notification
 
 coach_applications_bp = Blueprint("coach_applications", __name__)
 
@@ -380,6 +381,20 @@ def review_coach_application():
                         """,
                         (client_id, certifications)
                     )
+
+        # Notify the applicant of the decision
+        if action == "approve":
+            push_notification(
+                cursor, client_id, "system",
+                "Application Approved",
+                "Congratulations! Your coach application has been approved. You can now accept clients.",
+            )
+        else:
+            push_notification(
+                cursor, client_id, "system",
+                "Application Declined",
+                "Your coach application was not approved at this time.",
+            )
 
         conn.commit()
         return jsonify({"message": f"Application {new_status}"}), 200

@@ -41,6 +41,7 @@ from routes.payment import payment_bp
 from routes.invoice import invoice_bp
 from routes.review import review_bp
 from routes.progress import progress_bp
+from routes.notify import push_notification
 
 
 load_dotenv()
@@ -69,12 +70,20 @@ def handle_message(data):
         )
         conn.commit()
 
-        cursor.execute("SELECT * FROM messages WHERE message_id = %s", (cursor.lastrowid,))
+        msg_id = cursor.lastrowid
+        cursor.execute("SELECT * FROM messages WHERE message_id = %s", (msg_id,))
         new_message = cursor.fetchone()
 
         # Convert datetime to string so it can be sent over socket
         if new_message and new_message.get("sent_at"):
             new_message["sent_at"] = new_message["sent_at"].isoformat()
+
+        # Notify the receiver
+        cursor.execute("SELECT first_name, last_name FROM client WHERE client_id = %s", (sender_id,))
+        sender_row = cursor.fetchone()
+        sender_name = f"{sender_row['first_name']} {sender_row['last_name']}" if sender_row else "Someone"
+        push_notification(cursor, receiver_id, "message", "New Message", f"{sender_name} sent you a message.")
+        conn.commit()
 
         emit("receive_message", new_message, room=room)
     except Exception as e:
