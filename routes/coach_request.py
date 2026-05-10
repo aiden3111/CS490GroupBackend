@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from db import get_conn
 from routes.notify import push_notification
+from routes.invoice import create_mock_invoice
 
 # display all a coaches client requests and be able to accept or deny them
 coach_request_bp = Blueprint("coach_request", __name__)
@@ -131,6 +132,7 @@ def update_coach_request(coach_id, request_id):
             SET status = %s
             WHERE request_id = %s AND coach_id = %s
         """, (status, request_id, coach_id))
+        request_updated = cursor.rowcount
 
         if status == "accepted" and client_id:
             cursor.execute("""
@@ -138,6 +140,10 @@ def update_coach_request(coach_id, request_id):
                 SET coach_id = %s
                 WHERE client_id = %s
             """, (coach_id, client_id))
+            cursor.execute("SELECT pricing FROM coach WHERE coach_id = %s", (coach_id,))
+            coach_pricing = cursor.fetchone()
+            if coach_pricing:
+                create_mock_invoice(cursor, client_id, coach_pricing["pricing"])
 
         # Notify the client of the decision
         if client_id:
@@ -159,7 +165,7 @@ def update_coach_request(coach_id, request_id):
 
         conn.commit()
 
-        if cursor.rowcount == 0:
+        if request_updated == 0:
             return jsonify({"error": "Request not found"}), 404
 
         return jsonify({"message": f"Request {status}"}), 200
