@@ -42,7 +42,7 @@ jobs:
 
       - name: Load database schema
         run: |
-          mysql -h 127.0.0.1 -u root -ptestpassword fitappdb < databaseStuff/dump-fitappdb-202605011406.sql
+          mysql -h 127.0.0.1 -u root -ptestpassword fitappdb < databaseStuff/BitFit_FullDBDump.sql
 
       - name: Run tests
         env:
