@@ -12,7 +12,7 @@ UPLOAD_FOLDER = "uploads"
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-@progress_bp.route("/upload/<int:client_id>", methods=["POST"])
+@progress_bp.route("/upload/<string:client_id>", methods=["POST"])
 def upload_photo(client_id):
     
     data = request.json 
