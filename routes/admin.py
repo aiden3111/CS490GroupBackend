@@ -507,6 +507,7 @@ def disable_user():
                 cursor, client_id, "system",
                 "Account Disabled",
                 "Your account has been disabled by an administrator. Please contact support.",
+                send_email=True,
             )
 
             conn.commit()
@@ -528,6 +529,7 @@ def disable_user():
                 cursor, coach_id, "system",
                 "Account Suspended",
                 "Your coach account has been suspended by an administrator. Please contact support.",
+                send_email=True,
             )
 
             conn.commit()
@@ -613,6 +615,7 @@ def reactivate_user():
                 cursor, client_id, "system",
                 "Account Reactivated",
                 "Your account has been reactivated. Welcome back!",
+                send_email=True,
             )
 
             conn.commit()
@@ -634,6 +637,7 @@ def reactivate_user():
                 cursor, coach_id, "system",
                 "Account Reactivated",
                 "Your coach account has been reactivated. Welcome back!",
+                send_email=True,
             )
 
             conn.commit()

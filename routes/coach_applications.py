@@ -388,12 +388,14 @@ def review_coach_application():
                 cursor, client_id, "system",
                 "Application Approved",
                 "Congratulations! Your coach application has been approved. You can now accept clients.",
+                send_email=True,
             )
         else:
             push_notification(
                 cursor, client_id, "system",
                 "Application Declined",
                 "Your coach application was not approved at this time.",
+                send_email=True,
             )
 
         conn.commit()

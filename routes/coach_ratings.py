@@ -76,7 +76,14 @@ def rate_coach(coach_id):
         client_row = cursor2.fetchone()
         cursor2.close()
         client_name = f"{client_row['first_name']} {client_row['last_name']}" if client_row else "A client"
-        push_notification(cursor, coach_id, "review", "New Review", f"{client_name} left you a {rating}-star review.")
+        push_notification(
+            cursor,
+            coach_id,
+            "review",
+            "New Review",
+            f"{client_name} left you a {rating}-star review.",
+            send_email=True,
+        )
 
         conn.commit()
         return jsonify({"message": "Review submitted successfully"}), 200

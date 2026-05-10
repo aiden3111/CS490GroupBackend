@@ -84,7 +84,14 @@ def create_workout_plan():
             coach_row = cursor2.fetchone()
             cursor2.close()
             coach_name = f"{coach_row['first_name']} {coach_row['last_name']}" if coach_row else "Your coach"
-            push_notification(cursor, client_id, "workout", "New Workout Plan", f"{coach_name} created a new workout plan for you.")
+            push_notification(
+                cursor,
+                client_id,
+                "workout",
+                "New Workout Plan",
+                f"{coach_name} created a new workout plan for you.",
+                send_email=True,
+            )
 
         conn.commit()
         cursor.close()
@@ -388,6 +395,7 @@ def update_workout_plan(workout_plan_id):
             push_notification(
                 cursor, plan_info[0], "workout",
                 "Workout Plan Updated", "Your workout plan has been updated by your coach.",
+                send_email=True,
             )
 
         conn.commit()

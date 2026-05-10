@@ -153,7 +153,14 @@ def update_nutrition_plan(coach_id, client_id, nutrition_plan_id):
             cursor.execute(query, (meal['meal_name'], meal['calories'], meal['time_of_day'], meal['description'], meal['protein'], meal['carbs'], meal['fats'], meal['day_number'], nutrition_plan_id, meal['meal_id']))
 
         # Notify the client that their nutrition plan was updated
-        push_notification(cursor, client_id, "nutrition", "Meal Plan Updated", "Your nutrition plan has been updated by your coach.")
+        push_notification(
+            cursor,
+            client_id,
+            "nutrition",
+            "Meal Plan Updated",
+            "Your nutrition plan has been updated by your coach.",
+            send_email=True,
+        )
 
         conn.commit()
         return jsonify({"message": "Nutrition plan updated successfully"}), 200
@@ -386,7 +393,14 @@ def create_nutrition_plan_header():
         coach_row = cursor2.fetchone()
         cursor2.close()
         coach_name = f"{coach_row['first_name']} {coach_row['last_name']}" if coach_row else "Your coach"
-        push_notification(cursor, client_id, "nutrition", "New Meal Plan", f"{coach_name} created a new nutrition plan for you.")
+        push_notification(
+            cursor,
+            client_id,
+            "nutrition",
+            "New Meal Plan",
+            f"{coach_name} created a new nutrition plan for you.",
+            send_email=True,
+        )
 
         conn.commit()
         return jsonify({"message": "Plan created", "nutrition_plan_id": new_plan_id}), 201

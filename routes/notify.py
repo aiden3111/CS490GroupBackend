@@ -1,4 +1,56 @@
-def push_notification(cursor, user_id, type_, title, body=""):
+import html
+import json
+import os
+import urllib.error
+import urllib.request
+
+
+def _get_value(row, key, index, default=None):
+    if row is None:
+        return default
+    if isinstance(row, dict):
+        return row.get(key, default)
+    return row[index] if len(row) > index else default
+
+
+def _send_resend_email(to_email, subject, body):
+    api_key = os.getenv("RESEND_API_KEY")
+    if not api_key or not to_email:
+        return
+
+    from_email = os.getenv("EMAIL_FROM", "BitFit <onboarding@resend.dev>")
+    payload = {
+        "from": from_email,
+        "to": [to_email],
+        "subject": subject,
+        "html": f"""
+            <div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827">
+              <h2 style="margin:0 0 12px">BitFit</h2>
+              <p>{html.escape(body or subject)}</p>
+            </div>
+        """,
+    }
+
+    req = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=8):
+            return
+    except urllib.error.HTTPError as e:
+        print(f"Resend email failed: {e.code} {e.read().decode('utf-8', errors='ignore')}")
+    except Exception as e:
+        print(f"Resend email failed: {e}")
+
+
+def push_notification(cursor, user_id, type_, title, body="", send_email=False):
     """
     Insert a single in-app notification row using an existing cursor.
     The caller is responsible for committing the transaction.
@@ -8,29 +60,36 @@ def push_notification(cursor, user_id, type_, title, body=""):
     try:
         cursor.execute(
             """
-            SELECT in_app_notifications
-            FROM notification_preferences
-            WHERE client_id = %s
+            SELECT
+                COALESCE(np.in_app_notifications, 1) AS in_app_notifications,
+                COALESCE(np.email_notifications, 0) AS email_notifications,
+                c.email
+            FROM client c
+            LEFT JOIN notification_preferences np ON c.client_id = np.client_id
+            WHERE c.client_id = %s
             LIMIT 1
             """,
             (user_id,),
         )
         preferences = cursor.fetchone()
-        if preferences is not None:
-            if isinstance(preferences, dict):
-                enabled = bool(preferences.get("in_app_notifications"))
-            else:
-                enabled = bool(preferences[0])
-            if not enabled:
-                return None
+        in_app_enabled = bool(_get_value(preferences, "in_app_notifications", 0, True))
+        email_enabled = bool(_get_value(preferences, "email_notifications", 1, False))
+        email = _get_value(preferences, "email", 2)
 
-        cursor.execute(
-            """
-            INSERT INTO notifications (user_id, type, title, body, channel, is_read)
-            VALUES (%s, %s, %s, %s, 'in_app', 0)
-            """,
-            (user_id, type_, title, body),
-        )
-        return cursor.lastrowid
+        notification_id = None
+        if in_app_enabled:
+            cursor.execute(
+                """
+                INSERT INTO notifications (user_id, type, title, body, channel, is_read)
+                VALUES (%s, %s, %s, %s, 'in_app', 0)
+                """,
+                (user_id, type_, title, body),
+            )
+            notification_id = cursor.lastrowid
+
+        if send_email and email_enabled:
+            _send_resend_email(email, title, body)
+
+        return notification_id
     except Exception:
         return None

@@ -161,7 +161,14 @@ def send_hire_request(coach_id):
         cursor.execute("SELECT first_name, last_name FROM client WHERE client_id = %s", (client_id,))
         client_row = cursor.fetchone()
         client_name = f"{client_row['first_name']} {client_row['last_name']}" if client_row else "A client"
-        push_notification(cursor, coach_id, "coach", "New Hire Request", f"{client_name} wants to work with you.")
+        push_notification(
+            cursor,
+            coach_id,
+            "coach",
+            "New Hire Request",
+            f"{client_name} wants to work with you.",
+            send_email=True,
+        )
 
         conn.commit()
 

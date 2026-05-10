@@ -160,12 +160,14 @@ def update_coach_request(coach_id, request_id):
                     cursor, client_id, "coach",
                     "Request Accepted",
                     f"{coach_name} accepted your request! You can now message them.",
+                    send_email=True,
                 )
             elif status == "rejected":
                 push_notification(
                     cursor, client_id, "coach",
                     "Request Not Accepted",
                     f"Your request to {coach_name} was not accepted.",
+                    send_email=True,
                 )
 
         conn.commit()
