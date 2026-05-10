@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from db import get_conn
+from routes.invoice import create_mock_invoice
 
 
 coach_bp = Blueprint("coach", __name__)
@@ -140,6 +141,15 @@ def handle_client_request():
 
         if action == "accept":
             cursor.execute("UPDATE client SET coach_id = %s WHERE client_id = %s", (coach_id, client_id))
+            cursor.execute("SELECT pricing FROM coach WHERE coach_id = %s", (coach_id,))
+            coach_pricing = cursor.fetchone()
+            if coach_pricing:
+                create_mock_invoice(
+                    cursor,
+                    client_id,
+                    coach_pricing[0],
+                    allow_duplicate=True,
+                )
             message = "Client accepted"
 
         elif action == "decline":

@@ -19,20 +19,21 @@ def _next_month(value):
     return date(value.year, value.month + 1, 1)
 
 
-def create_mock_invoice(cursor, client_id, amount, billed_on=None):
+def create_mock_invoice(cursor, client_id, amount, billed_on=None, allow_duplicate=False):
     billed_on = billed_on or date.today()
     billing_month = _month_label(billed_on)
-    cursor.execute(
-        """
-        SELECT invoice_id
-        FROM invoice
-        WHERE client_id = %s AND billing_month = %s
-        LIMIT 1
-        """,
-        (client_id, billing_month),
-    )
-    if cursor.fetchone():
-        return None
+    if not allow_duplicate:
+        cursor.execute(
+            """
+            SELECT invoice_id
+            FROM invoice
+            WHERE client_id = %s AND billing_month = %s
+            LIMIT 1
+            """,
+            (client_id, billing_month),
+        )
+        if cursor.fetchone():
+            return None
 
     cursor.execute(
         """

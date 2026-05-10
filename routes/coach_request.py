@@ -143,7 +143,12 @@ def update_coach_request(coach_id, request_id):
             cursor.execute("SELECT pricing FROM coach WHERE coach_id = %s", (coach_id,))
             coach_pricing = cursor.fetchone()
             if coach_pricing:
-                create_mock_invoice(cursor, client_id, coach_pricing["pricing"])
+                create_mock_invoice(
+                    cursor,
+                    client_id,
+                    coach_pricing["pricing"],
+                    allow_duplicate=True,
+                )
 
         # Notify the client of the decision
         if client_id:
