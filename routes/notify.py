@@ -13,5 +13,5 @@ def push_notification(cursor, user_id, type_, title, body=""):
             """,
             (user_id, type_, title, body),
         )
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[push_notification ERROR] user_id={user_id} type={type_} title={title!r} error={e}")
